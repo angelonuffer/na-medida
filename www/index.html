@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Na Medida - SPA</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Menu Lateral -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>Na Medida</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <button class="nav-btn active" data-page="alimentos">
+                    <span class="icon">🍎</span> Alimentos
+                </button>
+                <button class="nav-btn" data-page="refeicoes">
+                    <span class="icon">🍽️</span> Refeições
+                </button>
+            </nav>
+        </aside>
+        
+        <!-- Conteúdo Principal -->
+        <main class="main-content">
+            <!-- Página de Alimentos -->
+            <section id="alimentos" class="page-section active">
+                <h1>Alimentos</h1>
+                <p>Aqui você pode gerenciar a base de dados de alimentos.</p>
+                <div class="content-placeholder">
+                    <!-- Conteúdo dinâmico será injetado aqui futuramente -->
+                </div>
+            </section>
+            
+            <!-- Página de Refeições -->
+            <section id="refeicoes" class="page-section">
+                <h1>Refeições</h1>
+                <p>Aqui você pode gerenciar e planejar suas refeições.</p>
+                <div class="content-placeholder">
+                    <!-- Conteúdo dinâmico será injetado aqui futuramente -->
+                </div>
+            </section>
+        </main>
+    </div>
+    
+    <script src="app.js"></script>
+</body>
+</html>
