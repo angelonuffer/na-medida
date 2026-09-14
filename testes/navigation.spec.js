@@ -14,11 +14,15 @@ test.describe('Navegação principal', () => {
     await expect(refeicoesButton).not.toHaveClass(/active/);
     await expect(refeicoesSection).not.toHaveClass(/active/);
 
+    await expect(page).toHaveScreenshot('alimentos.png', { fullPage: true });
+
     await refeicoesButton.click();
 
     await expect(refeicoesButton).toHaveClass(/active/);
     await expect(refeicoesSection).toHaveClass(/active/);
     await expect(alimentosButton).not.toHaveClass(/active/);
     await expect(alimentosSection).not.toHaveClass(/active/);
+
+    await expect(page).toHaveScreenshot('refeicoes.png', { fullPage: true });
   });
 });
