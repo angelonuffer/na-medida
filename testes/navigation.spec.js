@@ -1,28 +1,28 @@
 const { test, expect } = require('@playwright/test');
 
 test.describe('Navegação principal', () => {
-  test('inicia em Alimentos e navega para Refeições', async ({ page }) => {
+  test('inicia em Alimentos e navega para Consumo', async ({ page }) => {
     await page.goto('/');
 
     const alimentosButton = page.getByRole('button', { name: /Alimentos/ });
-    const refeicoesButton = page.getByRole('button', { name: /Refeições/ });
+    const consumoButton = page.getByRole('button', { name: /Consumo/ });
     const alimentosSection = page.locator('#alimentos');
-    const refeicoesSection = page.locator('#refeicoes');
+    const consumoSection = page.locator('#consumo');
 
     await expect(alimentosButton).toHaveClass(/active/);
     await expect(alimentosSection).toHaveClass(/active/);
-    await expect(refeicoesButton).not.toHaveClass(/active/);
-    await expect(refeicoesSection).not.toHaveClass(/active/);
+    await expect(consumoButton).not.toHaveClass(/active/);
+    await expect(consumoSection).not.toHaveClass(/active/);
 
     await expect(page).toHaveScreenshot('alimentos.png', { fullPage: true });
 
-    await refeicoesButton.click();
+    await consumoButton.click();
 
-    await expect(refeicoesButton).toHaveClass(/active/);
-    await expect(refeicoesSection).toHaveClass(/active/);
+    await expect(consumoButton).toHaveClass(/active/);
+    await expect(consumoSection).toHaveClass(/active/);
     await expect(alimentosButton).not.toHaveClass(/active/);
     await expect(alimentosSection).not.toHaveClass(/active/);
 
-    await expect(page).toHaveScreenshot('refeicoes.png', { fullPage: true });
+    await expect(page).toHaveScreenshot('consumo.png', { fullPage: true });
   });
 });
