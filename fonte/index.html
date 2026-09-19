@@ -7,44 +7,7 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="app-container">
-        <!-- Menu Lateral -->
-        <aside class="sidebar">
-            <div class="sidebar-header">
-                <h2>Na Medida</h2>
-            </div>
-            <nav class="sidebar-nav">
-                <button class="nav-btn active" data-page="alimentos">
-                    <span class="icon">🍎</span> Alimentos
-                </button>
-                <button class="nav-btn" data-page="consumo">
-                    <span class="icon">🍽️</span> Consumo
-                </button>
-            </nav>
-        </aside>
-        
-        <!-- Conteúdo Principal -->
-        <main class="main-content">
-            <!-- Página de Alimentos -->
-            <section id="alimentos" class="page-section active">
-                <h1>Alimentos</h1>
-                <p>Aqui você pode gerenciar a base de dados de alimentos.</p>
-                <div class="content-placeholder">
-                    <!-- Conteúdo dinâmico será injetado aqui futuramente -->
-                </div>
-            </section>
-            
-            <!-- Página de Consumo -->
-            <section id="consumo" class="page-section">
-                <h1>Consumo</h1>
-                <p>Aqui você pode gerenciar e planejar seu consumo.</p>
-                <div class="content-placeholder">
-                    <!-- Conteúdo dinâmico será injetado aqui futuramente -->
-                </div>
-            </section>
-        </main>
-    </div>
-    
-    <script type="module" src="app.js"></script>
+    <div id="app"></div>
+    <script type="module" src="main.js"></script>
 </body>
 </html>
