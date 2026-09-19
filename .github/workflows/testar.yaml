@@ -7,6 +7,9 @@ on:
 jobs:
   testar:
     runs-on: ubuntu-latest
+    # Mesma imagem do devcontainer, para manter SO/fontes idênticos aos testes visuais locais.
+    container:
+      image: mcr.microsoft.com/playwright:v1.63.0-noble
 
     steps:
       - name: Baixar código
