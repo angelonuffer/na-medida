@@ -91,15 +91,3 @@ jobs:
       - name: Publicar no GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-
-  limpar:
-    if: ${{ always() && needs.gerar.result == 'success' }}
-    needs: [gerar, testar, publicar]
-    runs-on: ubuntu-latest
-    permissions:
-      actions: write
-    steps:
-      - name: Excluir build
-        uses: actions/delete-artifact@v5
-        with:
-          name: build
