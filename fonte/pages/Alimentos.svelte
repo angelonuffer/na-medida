@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import { listarAlimentos, removerAlimento } from '../db.js';
 
+  let { onCadastrar } = $props();
   let alimentos = $state([]);
 
   onMount(async () => {
@@ -25,6 +26,7 @@
 <section id="alimentos" class="page-section active">
   <h1>Alimentos</h1>
   <p>Aqui você pode gerenciar a base de dados de alimentos.</p>
+  <button class="btn-cadastrar" onclick={onCadastrar}>Cadastrar alimento</button>
 
   <div class="lista-alimentos">
     {#if alimentos.length === 0}

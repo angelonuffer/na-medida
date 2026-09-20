@@ -123,6 +123,22 @@ p {
     background-color: #fafafa;
 }
 
+.btn-cadastrar {
+    background-color: #3498db;
+    color: #fff;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 6px;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.btn-cadastrar:hover {
+    background-color: #2980b9;
+}
+
 /* Formulário de cadastro de alimento */
 .form-alimento {
     display: flex;
