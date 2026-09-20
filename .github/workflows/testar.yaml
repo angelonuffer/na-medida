@@ -1,37 +1,17 @@
 name: Testar
 
 on:
-  push:
   pull_request:
+  workflow_call:
 
 permissions:
   contents: read
 
 jobs:
   gerar:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Baixar código
-        uses: actions/checkout@v7
-
-      - name: Configurar Node.js
-        uses: actions/setup-node@v7
-        with:
-          node-version: 24
-          cache: npm
-
-      - name: Instalar dependências
-        run: npm ci
-
-      - name: Gerar build
-        run: npm run build
-
-      - name: Anexar build
-        uses: actions/upload-artifact@v7
-        with:
-          name: build
-          path: alvo
+    uses: ./.github/workflows/gerar.yaml
+    permissions:
+      contents: read
 
   testar:
     needs: gerar
@@ -61,33 +41,3 @@ jobs:
         with:
           name: test-results
           path: test-results/
-
-  publicar:
-    if: ${{ needs.testar.result == 'success' && github.event_name == 'push' }}
-    needs: [gerar, testar]
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Baixar build
-        uses: actions/download-artifact@v8
-        with:
-          name: build
-          path: alvo
-
-      - name: Configurar GitHub Pages
-        uses: actions/configure-pages@v5
-
-      - name: Empacotar site
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: alvo
-
-      - name: Publicar no GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4

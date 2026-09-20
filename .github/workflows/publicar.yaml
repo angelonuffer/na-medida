@@ -1,0 +1,39 @@
+name: Publicar
+
+on:
+  push:
+
+jobs:
+  testar:
+    uses: ./.github/workflows/testar.yaml
+    permissions:
+      contents: read
+
+  publicar:
+    needs: testar
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Baixar build
+        uses: actions/download-artifact@v8
+        with:
+          name: build
+          path: alvo
+
+      - name: Configurar GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Empacotar site
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: alvo
+
+      - name: Publicar no GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
