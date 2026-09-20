@@ -26,7 +26,10 @@
 <section id="alimentos" class="page-section active">
   <h1>Alimentos</h1>
   <p>Aqui você pode gerenciar a base de dados de alimentos.</p>
-  <button class="btn-cadastrar" onclick={onCadastrar}>Cadastrar alimento</button>
+  <button class="btn-cadastrar" onclick={onCadastrar}>
+    <span class="material-symbols-outlined">add_circle</span>
+    <span>Cadastrar alimento</span>
+  </button>
 
   <div class="lista-alimentos">
     {#if alimentos.length === 0}
@@ -48,7 +51,10 @@
               <li>Fibras: {item.tabelaNutricional.fibras} g</li>
             </ul>
           </div>
-          <button class="btn-excluir" onclick={() => excluirAlimento(item.id)}>Excluir</button>
+          <button class="btn-excluir" onclick={() => excluirAlimento(item.id)}>
+            <span class="material-symbols-outlined">delete</span>
+            <span>Excluir</span>
+          </button>
         </div>
       {/each}
     {/if}

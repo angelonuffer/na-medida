@@ -6,8 +6,8 @@
   let paginaAtiva = 'alimentos';
 
   const paginas = [
-    { id: 'alimentos', label: 'Alimentos', icon: '🍎' },
-    { id: 'consumo', label: 'Consumo', icon: '🍽️' }
+    { id: 'alimentos', label: 'Alimentos', icon: 'restaurant' },
+    { id: 'consumo', label: 'Consumo', icon: 'local_dining' }
   ];
 </script>
 
@@ -24,7 +24,8 @@
           data-page={pagina.id}
           onclick={() => (paginaAtiva = pagina.id)}
         >
-          <span class="icon">{pagina.icon}</span> {pagina.label}
+          <span class="material-symbols-outlined icon">{pagina.icon}</span>
+          <span>{pagina.label}</span>
         </button>
       {/each}
     </nav>
