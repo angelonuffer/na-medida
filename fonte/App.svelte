@@ -1,11 +1,13 @@
 <script>
   import Alimentos from './pages/Alimentos.svelte';
+  import CadastroAlimento from './pages/CadastroAlimento.svelte';
   import Consumo from './pages/Consumo.svelte';
 
   let paginaAtiva = 'alimentos';
 
   const paginas = [
     { id: 'alimentos', label: 'Alimentos', icon: '🍎' },
+    { id: 'cadastro-alimento', label: 'Cadastrar alimento', icon: '➕' },
     { id: 'consumo', label: 'Consumo', icon: '🍽️' }
   ];
 </script>
@@ -32,6 +34,8 @@
   <main class="main-content">
     {#if paginaAtiva === 'alimentos'}
       <Alimentos />
+    {:else if paginaAtiva === 'cadastro-alimento'}
+      <CadastroAlimento />
     {:else}
       <Consumo />
     {/if}
