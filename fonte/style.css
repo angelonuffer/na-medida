@@ -144,6 +144,7 @@ p {
     color: #fff;
     border: none;
     padding: 12px 24px;
+    margin-bottom: 20px;
     border-radius: 6px;
     font-size: 15px;
     font-weight: 500;
@@ -243,6 +244,10 @@ p {
     display: flex;
     flex-direction: column;
     gap: 14px;
+}
+
+.lista-alimentos .content-placeholder {
+    margin-top: 0;
 }
 
 .card-alimento {
