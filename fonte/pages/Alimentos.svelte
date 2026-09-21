@@ -2,7 +2,7 @@
   import { onMount } from 'svelte';
   import { listarAlimentos, removerAlimento } from '../db.js';
 
-  let { onCadastrar } = $props();
+  let { onCadastrar, onSelecionar } = $props();
   let alimentos = $state([]);
 
   onMount(async () => {
@@ -36,7 +36,18 @@
       <div class="content-placeholder">Nenhum alimento cadastrado.</div>
     {:else}
       {#each alimentos as item (item.id)}
-        <div class="card-alimento">
+        <div
+          class="card-alimento"
+          role="button"
+          tabindex="0"
+          onclick={() => onSelecionar(item)}
+          onkeydown={(event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+              event.preventDefault();
+              onSelecionar(item);
+            }
+          }}
+        >
           {#if item.foto}
             <img class="card-foto" src={fotoUrl(item)} alt={item.nome} />
           {/if}
@@ -51,7 +62,13 @@
               <li>Fibras: {item.tabelaNutricional.fibras} g</li>
             </ul>
           </div>
-          <button class="btn-excluir" onclick={() => excluirAlimento(item.id)}>
+          <button
+            class="btn-excluir"
+            onclick={(event) => {
+              event.stopPropagation();
+              excluirAlimento(item.id);
+            }}
+          >
             <span class="material-symbols-outlined">delete</span>
             <span>Excluir</span>
           </button>

@@ -258,6 +258,15 @@ p {
     border-radius: 8px;
     padding: 14px;
     background-color: #fafafa;
+    cursor: pointer;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card-alimento:hover,
+.card-alimento:focus-visible {
+    border-color: #3498db;
+    box-shadow: 0 2px 8px rgba(52, 152, 219, 0.15);
+    outline: none;
 }
 
 .card-foto {
@@ -302,6 +311,80 @@ p {
 
 .btn-excluir:hover {
     background-color: #c0392b;
+}
+
+.btn-voltar {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 24px;
+    padding: 8px 0;
+    border: none;
+    background: none;
+    color: #2980b9;
+    font-size: 15px;
+    cursor: pointer;
+}
+
+.btn-voltar:hover {
+    color: #1f618d;
+}
+
+.detalhe-cabecalho {
+    display: flex;
+    align-items: flex-start;
+    gap: 24px;
+    margin-bottom: 30px;
+}
+
+.detalhe-foto {
+    width: 180px;
+    height: 180px;
+    border-radius: 8px;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.detalhe-cabecalho h1 {
+    margin-top: 8px;
+}
+
+.detalhe-nutricao {
+    max-width: 600px;
+    border-top: 1px solid #dce1e6;
+    padding-top: 24px;
+}
+
+.detalhe-nutricao h2 {
+    color: #2c3e50;
+    margin-bottom: 6px;
+}
+
+.detalhe-nutricao p {
+    margin-bottom: 16px;
+}
+
+.detalhe-nutricao dl {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px 24px;
+}
+
+.detalhe-nutricao dl div {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 8px;
+}
+
+.detalhe-nutricao dt {
+    color: #555;
+}
+
+.detalhe-nutricao dd {
+    color: #2c3e50;
+    font-weight: 600;
 }
 
 @media (max-width: 700px) {
@@ -364,6 +447,20 @@ p {
         width: 100%;
         height: auto;
         max-height: 220px;
+    }
+
+    .detalhe-cabecalho {
+        flex-direction: column;
+    }
+
+    .detalhe-foto {
+        width: 100%;
+        height: auto;
+        max-height: 260px;
+    }
+
+    .detalhe-nutricao dl {
+        grid-template-columns: 1fr;
     }
 
     .btn-excluir,

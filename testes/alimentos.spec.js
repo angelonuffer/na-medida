@@ -16,4 +16,8 @@ test('navega para a página de cadastro de alimento', async ({ page }) => {
   await page.getByRole('button', { name: /Alimentos/ }).click();
 
   await expect(page).toHaveScreenshot('alimentos-com-cadastro.png', { fullPage: true });
+
+  await page.getByText('Arroz branco cozido', { exact: true }).click();
+
+  await expect(page).toHaveScreenshot('detalhe-alimento.png', { fullPage: true });
 });
