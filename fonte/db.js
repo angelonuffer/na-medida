@@ -29,24 +29,35 @@ export async function adicionarAlimento(alimento) {
   });
 }
 
-export async function listarAlimentos() {
+export async function listarAlimentos({ arquivados = false } = {}) {
   const db = await abrirBanco();
   return new Promise((resolve, reject) => {
     const tx = db.transaction(STORE_ALIMENTOS, 'readonly');
     const store = tx.objectStore(STORE_ALIMENTOS);
     const request = store.getAll();
-    request.onsuccess = () => resolve(request.result);
+    request.onsuccess = () => resolve(request.result.filter((alimento) => Boolean(alimento.arquivado) === arquivados));
     request.onerror = () => reject(request.error);
   });
 }
 
-export async function removerAlimento(id) {
+export async function arquivarAlimento(id) {
   const db = await abrirBanco();
   return new Promise((resolve, reject) => {
     const tx = db.transaction(STORE_ALIMENTOS, 'readwrite');
     const store = tx.objectStore(STORE_ALIMENTOS);
-    const request = store.delete(id);
-    request.onsuccess = () => resolve();
+    const request = store.get(id);
+    request.onsuccess = () => {
+      const alimento = request.result;
+      if (!alimento) {
+        reject(new Error('Alimento não encontrado.'));
+        return;
+      }
+
+      alimento.arquivado = true;
+      const updateRequest = store.put(alimento);
+      updateRequest.onsuccess = () => resolve();
+      updateRequest.onerror = () => reject(updateRequest.error);
+    };
     request.onerror = () => reject(request.error);
   });
 }

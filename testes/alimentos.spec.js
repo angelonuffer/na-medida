@@ -20,4 +20,8 @@ test('navega para a página de cadastro de alimento', async ({ page }) => {
   await page.getByText('Arroz branco cozido', { exact: true }).click();
 
   await expect(page).toHaveScreenshot('detalhe-alimento.png', { fullPage: true });
+
+  await page.getByRole('button', { name: 'Arquivar' }).click();
+
+  await expect(page).toHaveScreenshot('arquivo-com-alimento.png', { fullPage: true });
 });

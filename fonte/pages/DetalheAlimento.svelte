@@ -1,5 +1,5 @@
 <script>
-  let { alimento, onVoltar } = $props();
+  let { alimento, onVoltar, onArquivar } = $props();
 
   function fotoUrl(item) {
     return item.foto ? URL.createObjectURL(item.foto) : '';
@@ -10,6 +10,11 @@
   <button class="btn-voltar" onclick={onVoltar}>
     <span class="material-symbols-outlined">arrow_back</span>
     <span>Voltar para alimentos</span>
+  </button>
+
+  <button class="btn-arquivar" onclick={() => onArquivar(alimento.id)}>
+    <span class="material-symbols-outlined">archive</span>
+    <span>Arquivar</span>
   </button>
 
   <div class="detalhe-cabecalho">

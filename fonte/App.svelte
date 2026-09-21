@@ -3,13 +3,16 @@
   import CadastroAlimento from './pages/CadastroAlimento.svelte';
   import Consumo from './pages/Consumo.svelte';
   import DetalheAlimento from './pages/DetalheAlimento.svelte';
+  import Arquivo from './pages/Arquivo.svelte';
+  import { arquivarAlimento } from './db.js';
 
   let paginaAtiva = 'alimentos';
   let alimentoSelecionado = null;
 
   const paginas = [
     { id: 'alimentos', label: 'Alimentos', icon: 'restaurant' },
-    { id: 'consumo', label: 'Consumo', icon: 'local_dining' }
+    { id: 'consumo', label: 'Consumo', icon: 'local_dining' },
+    { id: 'arquivo', label: 'Arquivo', icon: 'archive' }
   ];
 
   function abrirDetalhe(alimento) {
@@ -20,6 +23,12 @@
   function voltarParaAlimentos() {
     alimentoSelecionado = null;
     paginaAtiva = 'alimentos';
+  }
+
+  async function arquivarSelecionado(id) {
+    await arquivarAlimento(id);
+    alimentoSelecionado = null;
+    paginaAtiva = 'arquivo';
   }
 </script>
 
@@ -51,8 +60,14 @@
       />
     {:else if paginaAtiva === 'cadastro-alimento'}
       <CadastroAlimento />
+    {:else if paginaAtiva === 'arquivo'}
+      <Arquivo />
     {:else if paginaAtiva === 'detalhe-alimento' && alimentoSelecionado}
-      <DetalheAlimento alimento={alimentoSelecionado} onVoltar={voltarParaAlimentos} />
+      <DetalheAlimento
+        alimento={alimentoSelecionado}
+        onVoltar={voltarParaAlimentos}
+        onArquivar={arquivarSelecionado}
+      />
     {:else}
       <Consumo />
     {/if}
