@@ -7,14 +7,14 @@
   import Arquivo from './pages/Arquivo.svelte';
   import { arquivarAlimento, restaurarAlimento } from './db.js';
 
-  let paginaAtiva = 'alimentos';
+  let paginaAtiva = 'consumo';
   let alimentoSelecionado = null;
   let paginaAnteriorDetalhe = 'alimentos';
   let menuAberto = false;
 
   const paginas = [
-    { id: 'alimentos', label: 'Alimentos', icon: 'restaurant' },
     { id: 'consumo', label: 'Consumo', icon: 'local_dining' },
+    { id: 'alimentos', label: 'Alimentos', icon: 'restaurant' },
     { id: 'arquivo', label: 'Arquivo', icon: 'archive' }
   ];
 

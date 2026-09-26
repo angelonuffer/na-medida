@@ -2,6 +2,7 @@ const { test, expect } = require('@playwright/test');
 
 test('navega para a página de cadastro de alimento', async ({ page }) => {
   await page.goto('/');
+  await page.getByRole('button', { name: /Alimentos/ }).click();
 
   await page.getByRole('button', { name: /Cadastrar alimento/ }).click();
 

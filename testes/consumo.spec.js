@@ -19,6 +19,7 @@ test('exibe o formulário de cadastro de Consumo', async ({ page }) => {
 
 test('exibe visualmente um consumo após o cadastro', async ({ page }) => {
   await page.goto('/');
+  await page.getByRole('button', { name: /Alimentos/ }).click();
   await page.getByRole('button', { name: 'Cadastrar alimento' }).click();
   await page.getByLabel('Nome').fill('Aveia em flocos');
   await page.getByRole('button', { name: 'Salvar alimento' }).click();
@@ -37,6 +38,7 @@ test('exibe visualmente um consumo após o cadastro', async ({ page }) => {
 test('exibe o resumo nutricional de hoje e a média dos sete dias anteriores', async ({ page }) => {
   await page.clock.install({ time: new Date('2026-01-02T12:00:00') });
   await page.goto('/');
+  await page.getByRole('button', { name: /Alimentos/ }).click();
   await page.getByRole('button', { name: 'Cadastrar alimento' }).click();
   await page.getByLabel('Nome').fill('Alimento do resumo');
   await page.getByLabel('Valor energético (kcal)').fill('100');
