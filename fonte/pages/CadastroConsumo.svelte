@@ -1,6 +1,6 @@
 <script>
   import { onDestroy, onMount } from 'svelte';
-  import { adicionarConsumo, listarAlimentos } from '../db.js';
+  import { adicionarAlimento, adicionarConsumo, listarAlimentos } from '../db.js';
 
   let { onSalvar, onVoltar } = $props();
   let alimentos = $state([]);
@@ -12,11 +12,23 @@
   let alimentoBusca = $state('');
   let sugestoesAbertas = $state(false);
   let sugestaoAtiva = $state(-1);
+  let modoCadastroAlimento = $state(false);
+  let tabelaNutricional = $state({
+    valorEnergetico: '',
+    gorduras: '',
+    carboidratos: '',
+    proteinas: '',
+    fibras: ''
+  });
   let massa = $state('');
   let erro = $state('');
   let alimentosFiltrados = $derived(
     alimentos.filter((alimento) => alimento.nome.toLocaleLowerCase('pt-BR').includes(alimentoBusca.trim().toLocaleLowerCase('pt-BR')))
   );
+  let mostrarOpcaoCadastro = $derived(
+    Boolean(alimentoBusca.trim()) && !alimentos.some((alimento) => alimento.nome.trim().toLocaleLowerCase('pt-BR') === alimentoBusca.trim().toLocaleLowerCase('pt-BR'))
+  );
+  let quantidadeSugestoes = $derived(alimentosFiltrados.length + Number(mostrarOpcaoCadastro));
 
   onMount(async () => {
     alimentos = await listarAlimentos();
@@ -36,6 +48,7 @@
   function atualizarBuscaAlimento(event) {
     alimentoBusca = event.currentTarget.value;
     alimentoId = '';
+    modoCadastroAlimento = false;
     sugestoesAbertas = true;
     sugestaoAtiva = -1;
     erro = '';
@@ -49,23 +62,34 @@
     erro = '';
   }
 
+  function iniciarCadastroAlimento() {
+    alimentoBusca = alimentoBusca.trim();
+    alimentoId = '';
+    modoCadastroAlimento = true;
+    sugestoesAbertas = false;
+    sugestaoAtiva = -1;
+    erro = '';
+  }
+
   function navegarSugestoes(event) {
     if (event.key === 'Escape') {
       sugestoesAbertas = false;
       return;
     }
 
-    if (!sugestoesAbertas || alimentosFiltrados.length === 0) return;
+    if (!sugestoesAbertas || quantidadeSugestoes === 0) return;
 
     if (event.key === 'ArrowDown') {
       event.preventDefault();
-      sugestaoAtiva = (sugestaoAtiva + 1) % alimentosFiltrados.length;
+      sugestaoAtiva = (sugestaoAtiva + 1) % quantidadeSugestoes;
     } else if (event.key === 'ArrowUp') {
       event.preventDefault();
-      sugestaoAtiva = (sugestaoAtiva - 1 + alimentosFiltrados.length) % alimentosFiltrados.length;
+      sugestaoAtiva = (sugestaoAtiva - 1 + quantidadeSugestoes) % quantidadeSugestoes;
     } else if (event.key === 'Enter') {
       event.preventDefault();
-      selecionarAlimento(alimentosFiltrados[sugestaoAtiva >= 0 ? sugestaoAtiva : 0]);
+      const indice = sugestaoAtiva >= 0 ? sugestaoAtiva : 0;
+      if (indice < alimentosFiltrados.length) selecionarAlimento(alimentosFiltrados[indice]);
+      else iniciarCadastroAlimento();
     }
   }
 
@@ -75,7 +99,18 @@
 
   async function salvarConsumo(event) {
     event.preventDefault();
-    const alimento = alimentos.find((item) => String(item.id) === alimentoId);
+    let alimento = alimentos.find((item) => String(item.id) === alimentoId);
+    if (modoCadastroAlimento) {
+      const alimentoNovo = {
+        nome: alimentoBusca.trim(),
+        tabelaNutricional: Object.fromEntries(
+          Object.entries(tabelaNutricional).map(([chave, valor]) => [chave, Number(valor) || 0])
+        )
+      };
+      const id = await adicionarAlimento(alimentoNovo);
+      alimento = { ...alimentoNovo, id };
+    }
+
     if (!alimento) {
       erro = 'Selecione um alimento cadastrado.';
       return;
@@ -133,14 +168,18 @@
         role="combobox"
         aria-autocomplete="list"
         aria-controls="sugestoes-alimentos"
-        aria-expanded={sugestoesAbertas && alimentosFiltrados.length > 0}
-        aria-activedescendant={sugestaoAtiva >= 0 ? `sugestao-alimento-${alimentosFiltrados[sugestaoAtiva]?.id}` : undefined}
+        aria-expanded={sugestoesAbertas && quantidadeSugestoes > 0}
+        aria-activedescendant={sugestaoAtiva < 0
+          ? undefined
+          : sugestaoAtiva < alimentosFiltrados.length
+            ? `sugestao-alimento-${alimentosFiltrados[sugestaoAtiva]?.id}`
+            : 'sugestao-cadastro-alimento'}
         oninput={atualizarBuscaAlimento}
         onkeydown={navegarSugestoes}
         onfocus={() => { if (!alimentoId) sugestoesAbertas = true; }}
         required
       />
-      {#if sugestoesAbertas && !alimentoId && alimentosFiltrados.length > 0}
+      {#if sugestoesAbertas && !alimentoId && quantidadeSugestoes > 0}
         <ul id="sugestoes-alimentos" class="sugestoes-alimentos" role="listbox">
           {#each alimentosFiltrados as alimento, indice (alimento.id)}
             <li
@@ -161,7 +200,51 @@
               {alimento.nome}
             </li>
           {/each}
+          {#if mostrarOpcaoCadastro}
+            <li
+              id="sugestao-cadastro-alimento"
+              role="option"
+              tabindex="-1"
+              aria-selected={sugestaoAtiva === alimentosFiltrados.length}
+              onmouseenter={() => { sugestaoAtiva = alimentosFiltrados.length; }}
+              onmousedown={(event) => event.preventDefault()}
+              onkeydown={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault();
+                  iniciarCadastroAlimento();
+                }
+              }}
+              onclick={iniciarCadastroAlimento}
+            >
+              Cadastrar "{alimentoBusca.trim()}"
+            </li>
+          {/if}
         </ul>
+      {/if}
+      {#if modoCadastroAlimento}
+        <fieldset class="tabela-nutricional">
+          <legend>Tabela nutricional (por 100g)</legend>
+          <div class="form-row">
+            <label for="novo-valor-energetico">Valor energético (kcal)</label>
+            <input id="novo-valor-energetico" type="number" min="0" step="0.1" bind:value={tabelaNutricional.valorEnergetico} />
+          </div>
+          <div class="form-row">
+            <label for="novo-valor-gorduras">Gorduras (g)</label>
+            <input id="novo-valor-gorduras" type="number" min="0" step="0.1" bind:value={tabelaNutricional.gorduras} />
+          </div>
+          <div class="form-row">
+            <label for="novo-valor-carboidratos">Carboidratos (g)</label>
+            <input id="novo-valor-carboidratos" type="number" min="0" step="0.1" bind:value={tabelaNutricional.carboidratos} />
+          </div>
+          <div class="form-row">
+            <label for="novo-valor-proteinas">Proteínas (g)</label>
+            <input id="novo-valor-proteinas" type="number" min="0" step="0.1" bind:value={tabelaNutricional.proteinas} />
+          </div>
+          <div class="form-row">
+            <label for="novo-valor-fibras">Fibras (g)</label>
+            <input id="novo-valor-fibras" type="number" min="0" step="0.1" bind:value={tabelaNutricional.fibras} />
+          </div>
+        </fieldset>
       {/if}
       {#if alimentos.length === 0}
         <small>Nenhum alimento cadastrado.</small>

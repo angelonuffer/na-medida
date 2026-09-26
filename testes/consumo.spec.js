@@ -128,3 +128,29 @@ test('exibe o resumo nutricional de hoje e a média dos sete dias anteriores', a
 
   await expect(page).toHaveScreenshot('resumo-nutricional.png', { fullPage: true });
 });
+
+test('cadastra um alimento novo com tabela nutricional ao salvar o consumo', async ({ page }) => {
+  await page.clock.install({ time: new Date('2026-01-02T12:00:00') });
+  await page.goto('/');
+  await page.getByRole('button', { name: /Alimentos/ }).click();
+  await page.getByRole('button', { name: 'Cadastrar alimento' }).click();
+  await page.getByLabel('Nome').fill('Aveia em flocos');
+  await page.getByRole('button', { name: 'Salvar alimento' }).click();
+
+  await page.getByRole('button', { name: /Consumo/ }).click();
+  await page.getByRole('button', { name: 'Cadastrar consumo' }).click();
+  await page.getByLabel('Data e hora').fill('2026-01-02T12:34');
+  await page.getByLabel('Alimento').fill('Aveia');
+  await page.getByRole('option', { name: 'Cadastrar "Aveia"' }).click();
+
+  await page.getByLabel('Valor energético (kcal)').fill('389');
+  await page.getByLabel('Gorduras (g)').fill('7');
+  await page.getByLabel('Carboidratos (g)').fill('66');
+  await page.getByLabel('Proteínas (g)').fill('17');
+  await page.getByLabel('Fibras (g)').fill('11');
+  await page.getByLabel('Massa (g)').fill('45');
+  await expect(page).toHaveScreenshot('cadastro-consumo-alimento-novo.png', { fullPage: true });
+  await page.getByRole('button', { name: 'Salvar consumo' }).click();
+
+  await expect(page).toHaveScreenshot('consumo-com-alimento-cadastrado.png', { fullPage: true });
+});
