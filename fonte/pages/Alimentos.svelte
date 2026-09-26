@@ -21,9 +21,9 @@
 <section id="alimentos" class="page-section active">
   <h1>Alimentos</h1>
   <p>Aqui você pode gerenciar a base de dados de alimentos.</p>
-  <button class="btn-cadastrar" onclick={onCadastrar}>
+  <button class="btn-cadastrar" aria-label="Cadastrar alimento" onclick={onCadastrar}>
     <span class="material-symbols-outlined">add_circle</span>
-    <span>Cadastrar alimento</span>
+    <span>Alimento</span>
   </button>
 
   <div class="lista-alimentos">
