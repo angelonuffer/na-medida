@@ -315,7 +315,8 @@ p {
     font-size: 13px;
 }
 
-.btn-arquivar {
+.btn-arquivar,
+.btn-restaurar {
     background-color: #7f8c8d;
     color: #fff;
     border: none;
@@ -329,7 +330,8 @@ p {
     gap: 8px;
 }
 
-.btn-arquivar:hover {
+.btn-arquivar:hover,
+.btn-restaurar:hover {
     background-color: #616a6b;
 }
 

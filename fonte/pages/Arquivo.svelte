@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import { listarAlimentos } from '../db.js';
 
+  let { onSelecionar } = $props();
   let alimentos = $state([]);
 
   onMount(async () => {
@@ -22,7 +23,18 @@
       <div class="content-placeholder">Nenhum alimento arquivado.</div>
     {:else}
       {#each alimentos as item (item.id)}
-        <div class="card-alimento">
+        <div
+          class="card-alimento"
+          role="button"
+          tabindex="0"
+          onclick={() => onSelecionar(item)}
+          onkeydown={(event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+              event.preventDefault();
+              onSelecionar(item);
+            }
+          }}
+        >
           {#if item.foto}
             <img class="card-foto" src={fotoUrl(item)} alt={item.nome} />
           {/if}

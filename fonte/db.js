@@ -61,3 +61,25 @@ export async function arquivarAlimento(id) {
     request.onerror = () => reject(request.error);
   });
 }
+
+export async function restaurarAlimento(id) {
+  const db = await abrirBanco();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_ALIMENTOS, 'readwrite');
+    const store = tx.objectStore(STORE_ALIMENTOS);
+    const request = store.get(id);
+    request.onsuccess = () => {
+      const alimento = request.result;
+      if (!alimento) {
+        reject(new Error('Alimento não encontrado.'));
+        return;
+      }
+
+      alimento.arquivado = false;
+      const updateRequest = store.put(alimento);
+      updateRequest.onsuccess = () => resolve();
+      updateRequest.onerror = () => reject(updateRequest.error);
+    };
+    request.onerror = () => reject(request.error);
+  });
+}

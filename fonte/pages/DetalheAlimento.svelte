@@ -1,5 +1,5 @@
 <script>
-  let { alimento, onVoltar, onArquivar } = $props();
+  let { alimento, onVoltar, onArquivar, onRestaurar } = $props();
 
   function fotoUrl(item) {
     return item.foto ? URL.createObjectURL(item.foto) : '';
@@ -9,13 +9,20 @@
 <section id="detalhe-alimento" class="page-section active">
   <button class="btn-voltar" onclick={onVoltar}>
     <span class="material-symbols-outlined">arrow_back</span>
-    <span>Voltar para alimentos</span>
+    <span>Voltar para {alimento.arquivado ? 'arquivo' : 'alimentos'}</span>
   </button>
 
-  <button class="btn-arquivar" onclick={() => onArquivar(alimento.id)}>
-    <span class="material-symbols-outlined">archive</span>
-    <span>Arquivar</span>
-  </button>
+  {#if alimento.arquivado}
+    <button class="btn-arquivar btn-restaurar" onclick={() => onRestaurar(alimento.id)}>
+      <span class="material-symbols-outlined">unarchive</span>
+      <span>Restaurar</span>
+    </button>
+  {:else}
+    <button class="btn-arquivar" onclick={() => onArquivar(alimento.id)}>
+      <span class="material-symbols-outlined">archive</span>
+      <span>Arquivar</span>
+    </button>
+  {/if}
 
   <div class="detalhe-cabecalho">
     {#if alimento.foto}
