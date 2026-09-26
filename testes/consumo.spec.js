@@ -28,9 +28,29 @@ test('exibe visualmente um consumo após o cadastro', async ({ page }) => {
   await page.getByRole('button', { name: /Consumo/ }).click();
   await page.getByRole('button', { name: 'Cadastrar consumo' }).click();
   await page.getByLabel('Data e hora').fill('2026-01-02T12:34');
+  await page.getByLabel('Imagem').setInputFiles({
+    name: 'foto.png',
+    mimeType: 'image/png',
+    buffer: Buffer.from('imagem-de-teste')
+  });
   await page.getByLabel('Alimento').selectOption({ label: 'Aveia em flocos' });
   await page.getByLabel('Massa (g)').fill('45');
   await page.getByRole('button', { name: 'Salvar consumo' }).click();
+
+  const imagemSalva = await page.evaluate(() => new Promise((resolve, reject) => {
+    const request = indexedDB.open('na-medida');
+    request.onsuccess = () => {
+      const transaction = request.result.transaction('consumos', 'readonly');
+      const consumos = transaction.objectStore('consumos').getAll();
+      consumos.onsuccess = () => {
+        const imagem = consumos.result[0]?.imagem;
+        resolve(imagem ? { nome: imagem.name, tipo: imagem.type } : null);
+      };
+      consumos.onerror = () => reject(consumos.error);
+    };
+    request.onerror = () => reject(request.error);
+  }));
+  expect(imagemSalva).toEqual({ nome: 'foto.png', tipo: 'image/png' });
 
   await expect(page).toHaveScreenshot('lista-consumo-apos-cadastro.png', { fullPage: true });
 });

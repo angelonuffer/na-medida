@@ -5,6 +5,7 @@
   let { onSalvar, onVoltar } = $props();
   let alimentos = $state([]);
   let dataHora = $state(formatarDataHoraLocal(new Date()));
+  let imagem = $state(null);
   let alimentoId = $state('');
   let massa = $state('');
   let erro = $state('');
@@ -18,6 +19,10 @@
     return new Date(data.getTime() - deslocamento).toISOString().slice(0, 16);
   }
 
+  function selecionarImagem(event) {
+    imagem = event.currentTarget.files?.[0] ?? null;
+  }
+
   async function salvarConsumo(event) {
     event.preventDefault();
     const alimento = alimentos.find((item) => String(item.id) === alimentoId);
@@ -28,6 +33,7 @@
 
     await adicionarConsumo({
       dataHora,
+      imagem,
       alimentoId: alimento.id,
       alimentoNome: alimento.nome,
       massa: Number(massa)
@@ -44,6 +50,11 @@
     <div class="form-row">
       <label for="data-hora-consumo">Data e hora</label>
       <input id="data-hora-consumo" type="datetime-local" bind:value={dataHora} required />
+    </div>
+
+    <div class="form-row">
+      <label for="imagem-consumo">Imagem</label>
+      <input id="imagem-consumo" type="file" accept="image/*" onchange={selecionarImagem} />
     </div>
 
     <div class="form-row">
