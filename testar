@@ -1,3 +1,3 @@
 #!/bin/bash
 
-npm run build && npx playwright test --update-snapshots && npm test
+npm install && npm run build && npx playwright test --update-snapshots && npm test
