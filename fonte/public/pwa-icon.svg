@@ -1,5 +1,31 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="96" fill="#2c3e50"/>
-  <path fill="#e74c3c" d="M256 132c-53 0-96 43-96 96 0 68 96 154 96 154s96-86 96-154c0-53-43-96-96-96Z"/>
-  <path fill="#f4f6f8" d="M256 174c-30 0-54 24-54 54s24 54 54 54 54-24 54-54-24-54-54-54Zm-22 43h18v-18h8v18h18v8h-18v18h-8v-18h-18v-8Z"/>
+  <rect width="512" height="512" rx="72" fill="#f7f8f8"/>
+
+  <g id="scale">
+    <path fill="#303d4a" stroke="#1d2b38" stroke-width="7" d="M148 347h216l18 81c4 18-8 31-27 31H157c-19 0-31-13-27-31Z"/>
+    <path fill="#59636b" stroke="#aeb7bd" stroke-width="5" d="M155 348h202l12 76c2 9-4 15-14 15H157c-10 0-16-6-14-15Z"/>
+    <rect x="211" y="378" width="90" height="45" rx="6" fill="#eaf3f7" stroke="#1d2b38" stroke-width="5"/>
+    <text x="256" y="410" fill="#1d2b38" font-family="monospace" font-size="29" font-weight="700" text-anchor="middle">185</text>
+    <text x="289" y="411" fill="#1d2b38" font-family="sans-serif" font-size="12" font-weight="700">g</text>
+    <rect x="153" y="386" width="48" height="29" rx="6" fill="#263542" stroke="#1d2b38" stroke-width="4"/>
+    <rect x="311" y="386" width="48" height="29" rx="6" fill="#263542" stroke="#1d2b38" stroke-width="4"/>
+    <text x="177" y="404" fill="#fff" font-family="sans-serif" font-size="9" font-weight="700" text-anchor="middle">TARE</text>
+    <text x="335" y="404" fill="#fff" font-family="sans-serif" font-size="9" font-weight="700" text-anchor="middle">UNIT</text>
+  </g>
+
+  <g id="scale-plate">
+    <path fill="#e3e8e9" stroke="#1d2b38" stroke-width="7" d="M133 306c0-15 55-28 123-28s123 13 123 28v18c0 15-55 28-123 28s-123-13-123-28Z"/>
+    <ellipse cx="256" cy="306" rx="123" ry="28" fill="#f8f9f9" stroke="#1d2b38" stroke-width="7"/>
+  </g>
+
+  <g id="fire">
+    <path fill="#cf2639" d="M256 64c28 18 45 49 43 77-1 15 8 20 16 12 5-6 6-15 5-23 19 16 27 40 24 60-2 14 5 18 13 11 6-5 8-12 8-19 17 23 20 56 10 82-11 30-37 52-69 63l-100 1c-36-13-62-39-71-72-8-29-1-59 17-82 8 9 15 9 19 2 5-10 1-24-5-35 20 9 31 27 30 44-1 13 8 17 15 9 8-9 7-26 1-41-9-24-3-52 15-73 4 18 12 28 21 24 12-5 16-24 8-60Z"/>
+    <path fill="#ffb238" d="M258 100c12 19 14 36 6 51-5 10-14 18-16 32-1 10 2 17 8 23 3-17 12-28 23-40 8 17 8 31 1 44-7 13-8 23-3 32 7-11 16-17 27-21 0 23-13 42-39 56h-48c-25-12-40-33-40-58 0-14 5-27 14-38 9 20 18 25 25 18 7-7 4-21-2-33-8-16-5-34 7-48 2 14 7 21 14 18 8-4 13-18 10-36Z"/>
+  </g>
+
+  <g id="apple">
+    <path fill="#ed3037" stroke="#1d2b38" stroke-width="7" stroke-linejoin="round" d="M256 208c-16-12-37-10-51-1-22 15-26 46-13 77 11 26 29 42 49 42 8 0 11-5 17-5s9 5 17 5c20 0 38-16 49-42 13-31 9-62-13-77-14-9-35-11-51 1h-4Z"/>
+    <path fill="#53a95b" stroke="#1d2b38" stroke-width="6" stroke-linejoin="round" d="M256 204c3-24 20-39 47-40-6 22-21 37-47 40Z"/>
+    <path fill="none" stroke="#f8a0a0" stroke-linecap="round" stroke-width="6" d="M219 241c3-11 9-18 19-21"/>
+  </g>
 </svg>
