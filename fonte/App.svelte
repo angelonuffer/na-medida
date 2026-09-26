@@ -1,6 +1,7 @@
 <script>
   import Alimentos from './pages/Alimentos.svelte';
   import CadastroAlimento from './pages/CadastroAlimento.svelte';
+  import CadastroConsumo from './pages/CadastroConsumo.svelte';
   import Consumo from './pages/Consumo.svelte';
   import DetalheAlimento from './pages/DetalheAlimento.svelte';
   import Arquivo from './pages/Arquivo.svelte';
@@ -98,6 +99,8 @@
       />
     {:else if paginaAtiva === 'cadastro-alimento'}
       <CadastroAlimento />
+    {:else if paginaAtiva === 'cadastro-consumo'}
+      <CadastroConsumo onSalvar={() => (paginaAtiva = 'consumo')} onVoltar={() => (paginaAtiva = 'consumo')} />
     {:else if paginaAtiva === 'arquivo'}
       <Arquivo onSelecionar={(alimento) => abrirDetalhe(alimento, 'arquivo')} />
     {:else if paginaAtiva === 'detalhe-alimento' && alimentoSelecionado}
@@ -108,7 +111,7 @@
         onRestaurar={restaurarSelecionado}
       />
     {:else}
-      <Consumo />
+      <Consumo onCadastrar={() => (paginaAtiva = 'cadastro-consumo')} />
     {/if}
   </main>
 </div>

@@ -188,6 +188,14 @@ p {
     margin-bottom: 30px;
 }
 
+.form-consumo {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    max-width: 480px;
+    margin-bottom: 30px;
+}
+
 .form-row {
     display: flex;
     flex-direction: column;
@@ -201,13 +209,22 @@ p {
 }
 
 .form-row input,
-.form-row textarea {
+.form-row textarea,
+.form-row select {
     width: 100%;
     padding: 10px 12px;
     border: 1px solid #dce1e6;
     border-radius: 6px;
     font-size: 14px;
     font-family: inherit;
+}
+
+.form-row select {
+    background-color: #fff;
+}
+
+.form-row small {
+    color: #666;
 }
 
 .form-row textarea {
@@ -260,10 +277,54 @@ p {
     background-color: #2980b9;
 }
 
+.btn-voltar {
+    align-self: flex-start;
+    background: transparent;
+    border: 1px solid #dce1e6;
+    border-radius: 6px;
+    color: #2c3e50;
+    padding: 10px 16px;
+    font: inherit;
+    cursor: pointer;
+}
+
 .lista-alimentos {
     display: flex;
     flex-direction: column;
     gap: 14px;
+}
+
+.lista-consumos {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.card-consumo {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    padding: 14px;
+    background-color: #fafafa;
+}
+
+.card-consumo h2 {
+    color: #2c3e50;
+    font-size: 18px;
+    margin-bottom: 4px;
+}
+
+.card-consumo p {
+    margin: 0;
+    font-size: 14px;
+}
+
+.card-consumo strong {
+    color: #2c3e50;
+    white-space: nowrap;
 }
 
 .lista-alimentos .content-placeholder {

@@ -1,6 +1,7 @@
 const DB_NAME = 'na-medida';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 const STORE_ALIMENTOS = 'alimentos';
+const STORE_CONSUMOS = 'consumos';
 
 function abrirBanco() {
   return new Promise((resolve, reject) => {
@@ -10,6 +11,9 @@ function abrirBanco() {
       const db = event.target.result;
       if (!db.objectStoreNames.contains(STORE_ALIMENTOS)) {
         db.createObjectStore(STORE_ALIMENTOS, { keyPath: 'id', autoIncrement: true });
+      }
+      if (!db.objectStoreNames.contains(STORE_CONSUMOS)) {
+        db.createObjectStore(STORE_CONSUMOS, { keyPath: 'id', autoIncrement: true });
       }
     };
 
@@ -36,6 +40,28 @@ export async function listarAlimentos({ arquivados = false } = {}) {
     const store = tx.objectStore(STORE_ALIMENTOS);
     const request = store.getAll();
     request.onsuccess = () => resolve(request.result.filter((alimento) => Boolean(alimento.arquivado) === arquivados));
+    request.onerror = () => reject(request.error);
+  });
+}
+
+export async function adicionarConsumo(consumo) {
+  const db = await abrirBanco();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_CONSUMOS, 'readwrite');
+    const store = tx.objectStore(STORE_CONSUMOS);
+    const request = store.add(consumo);
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+export async function listarConsumos() {
+  const db = await abrirBanco();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_CONSUMOS, 'readonly');
+    const store = tx.objectStore(STORE_CONSUMOS);
+    const request = store.getAll();
+    request.onsuccess = () => resolve(request.result.sort((a, b) => b.dataHora.localeCompare(a.dataHora)));
     request.onerror = () => reject(request.error);
   });
 }
