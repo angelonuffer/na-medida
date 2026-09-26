@@ -179,6 +179,47 @@ p {
     background-color: #2980b9;
 }
 
+.resumo-nutricional {
+    margin-bottom: 20px;
+    border-top: 1px solid #eee;
+}
+
+.resumo-nutricional-item {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+    align-items: center;
+    gap: 16px;
+    padding: 12px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.resumo-nutricional-item h2 {
+    color: #2c3e50;
+    font-size: 15px;
+}
+
+.resumo-nutricional-valores {
+    text-align: right;
+}
+
+.resumo-nutricional-valores p {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    margin: 0;
+    font-size: 14px;
+}
+
+.resumo-nutricional-valores .material-symbols-outlined {
+    color: #667085;
+    font-size: 18px;
+}
+
+.resumo-nutricional-valores strong {
+    white-space: nowrap;
+}
+
 /* Formulário de cadastro de alimento */
 .form-alimento {
     display: flex;

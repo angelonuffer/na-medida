@@ -33,3 +33,27 @@ test('exibe visualmente um consumo após o cadastro', async ({ page }) => {
 
   await expect(page).toHaveScreenshot('lista-consumo-apos-cadastro.png', { fullPage: true });
 });
+
+test('exibe o resumo nutricional de hoje e a média dos sete dias anteriores', async ({ page }) => {
+  await page.clock.install({ time: new Date('2026-01-02T12:00:00') });
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Cadastrar alimento' }).click();
+  await page.getByLabel('Nome').fill('Alimento do resumo');
+  await page.getByLabel('Valor energético (kcal)').fill('100');
+  await page.getByLabel('Gorduras (g)').fill('10');
+  await page.getByLabel('Carboidratos (g)').fill('20');
+  await page.getByLabel('Proteínas (g)').fill('5');
+  await page.getByLabel('Fibras (g)').fill('2');
+  await page.getByRole('button', { name: 'Salvar alimento' }).click();
+
+  await page.getByRole('button', { name: /Consumo/ }).click();
+  for (const [dataHora, massa] of [['2026-01-02T12:00', '100'], ['2026-01-01T12:00', '700']]) {
+    await page.getByRole('button', { name: 'Cadastrar consumo' }).click();
+    await page.getByLabel('Data e hora').fill(dataHora);
+    await page.getByLabel('Alimento').selectOption({ label: 'Alimento do resumo' });
+    await page.getByLabel('Massa (g)').fill(massa);
+    await page.getByRole('button', { name: 'Salvar consumo' }).click();
+  }
+
+  await expect(page).toHaveScreenshot('resumo-nutricional.png', { fullPage: true });
+});
