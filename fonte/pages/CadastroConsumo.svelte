@@ -9,8 +9,14 @@
   let imagemPreview = $state('');
   let cameraInput;
   let alimentoId = $state('');
+  let alimentoBusca = $state('');
+  let sugestoesAbertas = $state(false);
+  let sugestaoAtiva = $state(-1);
   let massa = $state('');
   let erro = $state('');
+  let alimentosFiltrados = $derived(
+    alimentos.filter((alimento) => alimento.nome.toLocaleLowerCase('pt-BR').includes(alimentoBusca.trim().toLocaleLowerCase('pt-BR')))
+  );
 
   onMount(async () => {
     alimentos = await listarAlimentos();
@@ -25,6 +31,42 @@
     if (imagemPreview) URL.revokeObjectURL(imagemPreview);
     imagem = event.currentTarget.files?.[0] ?? null;
     imagemPreview = imagem?.type.startsWith('image/') ? URL.createObjectURL(imagem) : '';
+  }
+
+  function atualizarBuscaAlimento(event) {
+    alimentoBusca = event.currentTarget.value;
+    alimentoId = '';
+    sugestoesAbertas = true;
+    sugestaoAtiva = -1;
+    erro = '';
+  }
+
+  function selecionarAlimento(alimento) {
+    alimentoBusca = alimento.nome;
+    alimentoId = String(alimento.id);
+    sugestoesAbertas = false;
+    sugestaoAtiva = -1;
+    erro = '';
+  }
+
+  function navegarSugestoes(event) {
+    if (event.key === 'Escape') {
+      sugestoesAbertas = false;
+      return;
+    }
+
+    if (!sugestoesAbertas || alimentosFiltrados.length === 0) return;
+
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      sugestaoAtiva = (sugestaoAtiva + 1) % alimentosFiltrados.length;
+    } else if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      sugestaoAtiva = (sugestaoAtiva - 1 + alimentosFiltrados.length) % alimentosFiltrados.length;
+    } else if (event.key === 'Enter') {
+      event.preventDefault();
+      selecionarAlimento(alimentosFiltrados[sugestaoAtiva >= 0 ? sugestaoAtiva : 0]);
+    }
   }
 
   onDestroy(() => {
@@ -83,12 +125,44 @@
 
     <div class="form-row">
       <label for="alimento-consumo">Alimento</label>
-      <select id="alimento-consumo" bind:value={alimentoId} required>
-        <option value="" disabled>Selecione um alimento</option>
-        {#each alimentos as alimento (alimento.id)}
-          <option value={String(alimento.id)}>{alimento.nome}</option>
-        {/each}
-      </select>
+      <input
+        id="alimento-consumo"
+        type="text"
+        value={alimentoBusca}
+        placeholder="Digite para buscar alimento"
+        role="combobox"
+        aria-autocomplete="list"
+        aria-controls="sugestoes-alimentos"
+        aria-expanded={sugestoesAbertas && alimentosFiltrados.length > 0}
+        aria-activedescendant={sugestaoAtiva >= 0 ? `sugestao-alimento-${alimentosFiltrados[sugestaoAtiva]?.id}` : undefined}
+        oninput={atualizarBuscaAlimento}
+        onkeydown={navegarSugestoes}
+        onfocus={() => { if (!alimentoId) sugestoesAbertas = true; }}
+        required
+      />
+      {#if sugestoesAbertas && !alimentoId && alimentosFiltrados.length > 0}
+        <ul id="sugestoes-alimentos" class="sugestoes-alimentos" role="listbox">
+          {#each alimentosFiltrados as alimento, indice (alimento.id)}
+            <li
+              id={`sugestao-alimento-${alimento.id}`}
+              role="option"
+              tabindex="-1"
+              aria-selected={indice === sugestaoAtiva}
+              onmouseenter={() => { sugestaoAtiva = indice; }}
+              onmousedown={(event) => event.preventDefault()}
+              onkeydown={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault();
+                  selecionarAlimento(alimento);
+                }
+              }}
+              onclick={() => selecionarAlimento(alimento)}
+            >
+              {alimento.nome}
+            </li>
+          {/each}
+        </ul>
+      {/if}
       {#if alimentos.length === 0}
         <small>Nenhum alimento cadastrado.</small>
       {/if}

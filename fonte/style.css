@@ -264,6 +264,28 @@ p {
     background-color: #fff;
 }
 
+.sugestoes-alimentos {
+    max-height: 180px;
+    overflow-y: auto;
+    margin: -6px 0 0;
+    padding: 4px 0;
+    list-style: none;
+    border: 1px solid #dce1e6;
+    border-radius: 6px;
+    background: #fff;
+    box-shadow: 0 4px 10px rgb(16 24 40 / 12%);
+}
+
+.sugestoes-alimentos li {
+    padding: 9px 12px;
+    cursor: pointer;
+}
+
+.sugestoes-alimentos li:hover,
+.sugestoes-alimentos li[aria-selected="true"] {
+    background: #eef6fc;
+}
+
 .form-row small {
     color: #666;
 }

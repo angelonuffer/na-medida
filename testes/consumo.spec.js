@@ -17,6 +17,25 @@ test('exibe o formulário de cadastro de Consumo', async ({ page }) => {
   await expect(page).toHaveScreenshot('cadastro-consumo.png', { fullPage: true });
 });
 
+test('exibe visualmente as sugestões filtradas de alimentos', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: /Alimentos/ }).click();
+
+  for (const nome of ['Aveia em flocos', 'Arroz branco']) {
+    await page.getByRole('button', { name: 'Cadastrar alimento' }).click();
+    await page.getByLabel('Nome').fill(nome);
+    await page.getByRole('button', { name: 'Salvar alimento' }).click();
+    await page.getByRole('button', { name: /Alimentos/ }).click();
+  }
+
+  await page.getByRole('button', { name: /Consumo/ }).click();
+  await page.clock.install({ time: new Date('2026-01-02T12:00:00') });
+  await page.getByRole('button', { name: 'Cadastrar consumo' }).click();
+  await page.getByLabel('Alimento').fill('Aveia');
+
+  await expect(page).toHaveScreenshot('cadastro-consumo-com-sugestoes.png', { fullPage: true });
+});
+
 test('exibe uma miniatura ao selecionar imagem para o consumo', async ({ page }) => {
   await page.goto('/');
   await page.clock.install({ time: new Date('2026-01-02T12:00:00') });
@@ -61,7 +80,8 @@ test('exibe visualmente um consumo após o cadastro', async ({ page }) => {
     mimeType: 'image/png',
     buffer: Buffer.from('imagem-de-teste')
   });
-  await page.getByLabel('Alimento').selectOption({ label: 'Aveia em flocos' });
+  await page.getByLabel('Alimento').fill('Aveia');
+  await page.getByRole('option', { name: 'Aveia em flocos' }).click();
   await page.getByLabel('Massa (g)').fill('45');
   await page.getByRole('button', { name: 'Salvar consumo' }).click();
 
@@ -100,7 +120,8 @@ test('exibe o resumo nutricional de hoje e a média dos sete dias anteriores', a
   for (const [dataHora, massa] of [['2026-01-02T12:00', '100'], ['2026-01-01T12:00', '700']]) {
     await page.getByRole('button', { name: 'Cadastrar consumo' }).click();
     await page.getByLabel('Data e hora').fill(dataHora);
-    await page.getByLabel('Alimento').selectOption({ label: 'Alimento do resumo' });
+    await page.getByLabel('Alimento').fill('Alimento do resumo');
+    await page.getByRole('option', { name: 'Alimento do resumo' }).click();
     await page.getByLabel('Massa (g)').fill(massa);
     await page.getByRole('button', { name: 'Salvar consumo' }).click();
   }
