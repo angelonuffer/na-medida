@@ -7,6 +7,7 @@
   let dataHora = $state(formatarDataHoraLocal(new Date()));
   let imagem = $state(null);
   let imagemPreview = $state('');
+  let cameraInput;
   let alimentoId = $state('');
   let massa = $state('');
   let erro = $state('');
@@ -62,6 +63,19 @@
     <div class="form-row">
       <label for="imagem-consumo">Imagem</label>
       <input id="imagem-consumo" type="file" accept="image/*" onchange={selecionarImagem} />
+      <input
+        bind:this={cameraInput}
+        class="input-camera"
+        type="file"
+        accept="image/*"
+        capture="environment"
+        onchange={selecionarImagem}
+        aria-hidden="true"
+        tabindex="-1"
+      />
+      <button type="button" class="btn-camera" onclick={() => cameraInput?.click()}>
+        Tirar foto
+      </button>
       {#if imagemPreview}
         <img class="foto-preview" src={imagemPreview} alt="Prévia da imagem selecionada" />
       {/if}

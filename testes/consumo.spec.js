@@ -27,8 +27,22 @@ test('exibe uma miniatura ao selecionar imagem para o consumo', async ({ page })
     buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/pQAAAABJRU5ErkJggg==', 'base64')
   });
 
-  const miniatura = page.getByRole('img', { name: 'Prévia da imagem selecionada' });
   await expect(page).toHaveScreenshot('cadastro-consumo-com-imagem.png', { fullPage: true });
+});
+
+test('oferece captura de foto pela câmera no cadastro de consumo', async ({ page }) => {
+  await page.goto('/');
+  await page.clock.install({ time: new Date('2026-01-02T12:00:00') });
+  await page.getByRole('button', { name: 'Cadastrar consumo' }).click();
+
+  const cameraInput = page.locator('.input-camera');
+  await cameraInput.setInputFiles({
+    name: 'foto-camera.png',
+    mimeType: 'image/png',
+    buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/pQAAAABJRU5ErkJggg==', 'base64')
+  });
+
+  await expect(page).toHaveScreenshot('cadastro-consumo-com-foto.png', { fullPage: true });
 });
 
 test('exibe visualmente um consumo após o cadastro', async ({ page }) => {
