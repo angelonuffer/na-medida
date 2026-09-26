@@ -1,5 +1,6 @@
 <script>
   import { onDestroy, onMount } from 'svelte';
+  import { pipeline } from '@huggingface/transformers';
   import { adicionarAlimento, adicionarConsumo, listarAlimentos } from '../db.js';
 
   let { onSalvar, onVoltar } = $props();
@@ -13,6 +14,8 @@
   let sugestoesAbertas = $state(false);
   let sugestaoAtiva = $state(-1);
   let modoCadastroAlimento = $state(false);
+  let classificando = $state(false);
+  let aiClassifier = null;
   let tabelaNutricional = $state({
     valorEnergetico: '',
     gorduras: '',
@@ -22,6 +25,7 @@
   });
   let massa = $state('');
   let erro = $state('');
+  let botaoIaDesabilitado = $derived(!imagem || classificando);
   let alimentosFiltrados = $derived(
     alimentos.filter((alimento) => alimento.nome.toLocaleLowerCase('pt-BR').includes(alimentoBusca.trim().toLocaleLowerCase('pt-BR')))
   );
@@ -39,10 +43,82 @@
     return new Date(data.getTime() - deslocamento).toISOString().slice(0, 16);
   }
 
+  function limparLabelIo(label = '') {
+    if (!label) return '';
+    return label
+      .split(',')[0]
+      .replace(/[_-]+/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  function formatarLabelAlimento(label = '') {
+    const texto = limparLabelIo(label);
+    if (!texto) return '';
+    return texto
+      .split(' ')
+      .filter(Boolean)
+      .map((parte) => parte.charAt(0).toUpperCase() + parte.slice(1).toLowerCase())
+      .join(' ');
+  }
+
+  async function carregarClassificadorIa() {
+    if (aiClassifier) return aiClassifier;
+
+    const modelos = ['Xenova/food101', 'Xenova/foodnet', 'Xenova/vit-base-patch16-224'];
+    let ultimoErro = null;
+
+    for (const modelo of modelos) {
+      try {
+        aiClassifier = await pipeline('image-classification', modelo);
+        return aiClassifier;
+      } catch (error) {
+        ultimoErro = error;
+      }
+    }
+
+    throw ultimoErro ?? new Error('Não foi possível carregar o classificador de imagem.');
+  }
+
+  async function identificarAlimentoComIa() {
+    if (!imagem) return;
+
+    classificando = true;
+    erro = '';
+
+    try {
+      const classificador = await carregarClassificadorIa();
+      const resultado = await classificador(imagem, { top_k: 3 });
+      const labels = Array.isArray(resultado) ? resultado : [resultado];
+      const melhorLabel = labels
+        .flatMap((item) => Array.isArray(item) ? item : [item])
+        .map((item) => item?.label)
+        .map(formatarLabelAlimento)
+        .find((label) => Boolean(label));
+
+      if (!melhorLabel) {
+        throw new Error('Não foi possível reconhecer o alimento na imagem.');
+      }
+
+      alimentoBusca = melhorLabel;
+      alimentoId = '';
+      modoCadastroAlimento = false;
+      sugestoesAbertas = true;
+      sugestaoAtiva = -1;
+    } catch (error) {
+      erro = error instanceof Error ? error.message : 'Não foi possível identificar o alimento na imagem.';
+    } finally {
+      classificando = false;
+    }
+  }
+
   function selecionarImagem(event) {
     if (imagemPreview) URL.revokeObjectURL(imagemPreview);
     imagem = event.currentTarget.files?.[0] ?? null;
     imagemPreview = imagem?.type.startsWith('image/') ? URL.createObjectURL(imagem) : '';
+    if (imagem) {
+      erro = '';
+    }
   }
 
   function atualizarBuscaAlimento(event) {
@@ -160,25 +236,37 @@
 
     <div class="form-row">
       <label for="alimento-consumo">Alimento</label>
-      <input
-        id="alimento-consumo"
-        type="text"
-        value={alimentoBusca}
-        placeholder="Digite para buscar alimento"
-        role="combobox"
-        aria-autocomplete="list"
-        aria-controls="sugestoes-alimentos"
-        aria-expanded={sugestoesAbertas && quantidadeSugestoes > 0}
-        aria-activedescendant={sugestaoAtiva < 0
-          ? undefined
-          : sugestaoAtiva < alimentosFiltrados.length
-            ? `sugestao-alimento-${alimentosFiltrados[sugestaoAtiva]?.id}`
-            : 'sugestao-cadastro-alimento'}
-        oninput={atualizarBuscaAlimento}
-        onkeydown={navegarSugestoes}
-        onfocus={() => { if (!alimentoId) sugestoesAbertas = true; }}
-        required
-      />
+      <div class="campo-com-botao">
+        <input
+          id="alimento-consumo"
+          type="text"
+          value={alimentoBusca}
+          placeholder="Digite para buscar alimento"
+          role="combobox"
+          aria-autocomplete="list"
+          aria-controls="sugestoes-alimentos"
+          aria-expanded={sugestoesAbertas && quantidadeSugestoes > 0}
+          aria-activedescendant={sugestaoAtiva < 0
+            ? undefined
+            : sugestaoAtiva < alimentosFiltrados.length
+              ? `sugestao-alimento-${alimentosFiltrados[sugestaoAtiva]?.id}`
+              : 'sugestao-cadastro-alimento'}
+          oninput={atualizarBuscaAlimento}
+          onkeydown={navegarSugestoes}
+          onfocus={() => { if (!alimentoId) sugestoesAbertas = true; }}
+          required
+        />
+        <button
+          type="button"
+          class="btn-ia"
+          aria-label={classificando ? 'Reconhecendo alimento' : 'Reconhecer alimento'}
+          title="Reconhecer alimento com IA"
+          disabled={botaoIaDesabilitado}
+          onclick={identificarAlimentoComIa}
+        >
+          <span class="material-symbols-outlined">{classificando ? 'sync' : 'auto_awesome'}</span>
+        </button>
+      </div>
       {#if sugestoesAbertas && !alimentoId && quantidadeSugestoes > 0}
         <ul id="sugestoes-alimentos" class="sugestoes-alimentos" role="listbox">
           {#each alimentosFiltrados as alimento, indice (alimento.id)}

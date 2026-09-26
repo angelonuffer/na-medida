@@ -260,6 +260,49 @@ p {
     font-family: inherit;
 }
 
+.campo-com-botao {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.campo-com-botao input {
+    flex: 1;
+}
+
+.btn-ia {
+    width: 42px;
+    height: 42px;
+    border: 1px solid #4fa9df;
+    border-radius: 6px;
+    background: linear-gradient(135deg, #eaf7ff, #d8f0ff);
+    color: #0f7bb9;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease;
+    flex-shrink: 0;
+    box-shadow: 0 0 0 1px rgba(79, 169, 223, 0.08);
+}
+
+.btn-ia:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(79, 169, 223, 0.18);
+}
+
+.btn-ia:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: #edf2f7;
+    border-color: #c9d3dc;
+    color: #7c8a97;
+}
+
+.btn-ia .material-symbols-outlined {
+    font-size: 20px;
+}
+
 .form-row select {
     background-color: #fff;
 }

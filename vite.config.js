@@ -29,7 +29,8 @@ module.exports = defineConfig({
         ]
       },
       workbox: {
-        navigateFallback: 'index.html'
+        navigateFallback: 'index.html',
+        maximumFileSizeToCacheInBytes: 100 * 1024 * 1024
       }
     })
   ],

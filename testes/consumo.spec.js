@@ -49,6 +49,23 @@ test('exibe uma miniatura ao selecionar imagem para o consumo', async ({ page })
   await expect(page).toHaveScreenshot('cadastro-consumo-com-imagem.png', { fullPage: true });
 });
 
+test('ativa o botão de reconhecimento de alimento somente após carregar a imagem', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: /Consumo/ }).click();
+  await page.getByRole('button', { name: 'Cadastrar consumo' }).click();
+
+  const botaoIa = page.getByRole('button', { name: /reconhecer alimento|ia/i });
+  await expect(botaoIa).toBeDisabled();
+
+  await page.getByLabel('Imagem').setInputFiles({
+    name: 'foto.png',
+    mimeType: 'image/png',
+    buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/pQAAAABJRU5ErkJggg==', 'base64')
+  });
+
+  await expect(botaoIa).toBeEnabled();
+});
+
 test('oferece captura de foto pela câmera no cadastro de consumo', async ({ page }) => {
   await page.goto('/');
   await page.clock.install({ time: new Date('2026-01-02T12:00:00') });
