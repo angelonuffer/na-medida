@@ -259,7 +259,7 @@
         <button
           type="button"
           class="btn-ia"
-          aria-label={classificando ? 'Reconhecendo alimento' : 'Reconhecer alimento'}
+          aria-label={classificando ? 'IA em execução' : 'IA'}
           title="Reconhecer alimento com IA"
           disabled={botaoIaDesabilitado}
           onclick={identificarAlimentoComIa}
