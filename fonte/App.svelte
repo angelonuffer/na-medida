@@ -8,6 +8,7 @@
 
   let paginaAtiva = 'alimentos';
   let alimentoSelecionado = null;
+  let menuAberto = false;
 
   const paginas = [
     { id: 'alimentos', label: 'Alimentos', icon: 'restaurant' },
@@ -30,10 +31,39 @@
     alimentoSelecionado = null;
     paginaAtiva = 'arquivo';
   }
+
+  function alternarMenu() {
+    menuAberto = !menuAberto;
+  }
+
+  function fecharMenu() {
+    menuAberto = false;
+  }
+
+  function selecionarPagina(id) {
+    paginaAtiva = id;
+    fecharMenu();
+  }
 </script>
 
 <div class="app-container">
-  <aside class="sidebar">
+  <header class="mobile-topbar">
+    <button
+      class="menu-toggle"
+      aria-label={menuAberto ? 'Fechar menu' : 'Abrir menu'}
+      aria-expanded={menuAberto}
+      onclick={alternarMenu}
+    >
+      <span class="material-symbols-outlined">{menuAberto ? 'close' : 'menu'}</span>
+    </button>
+    <h2>Na Medida</h2>
+  </header>
+
+  {#if menuAberto}
+    <button class="sidebar-overlay" aria-label="Fechar menu" onclick={fecharMenu}></button>
+  {/if}
+
+  <aside class="sidebar" class:open={menuAberto}>
     <div class="sidebar-header">
       <h2>Na Medida</h2>
     </div>
@@ -43,7 +73,7 @@
           class:active={paginaAtiva === pagina.id}
           class="nav-btn"
           data-page={pagina.id}
-          onclick={() => (paginaAtiva = pagina.id)}
+          onclick={() => selecionarPagina(pagina.id)}
         >
           <span class="material-symbols-outlined icon">{pagina.icon}</span>
           <span>{pagina.label}</span>

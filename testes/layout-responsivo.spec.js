@@ -6,6 +6,10 @@ test('mantém o layout responsivo em dispositivos móveis', async ({ page }) => 
 
   await expect(page).toHaveScreenshot('alimentos-mobile.png', { fullPage: true });
 
+  await page.getByRole('button', { name: 'Abrir menu' }).click();
+
+  await expect(page).toHaveScreenshot('menu-aberto-mobile.png', { fullPage: true });
+
   await page.getByRole('button', { name: /Consumo/ }).click();
 
   await expect(page).toHaveScreenshot('consumo-mobile.png', { fullPage: true });
