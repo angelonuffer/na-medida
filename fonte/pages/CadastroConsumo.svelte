@@ -1,11 +1,12 @@
 <script>
-  import { onMount } from 'svelte';
+  import { onDestroy, onMount } from 'svelte';
   import { adicionarConsumo, listarAlimentos } from '../db.js';
 
   let { onSalvar, onVoltar } = $props();
   let alimentos = $state([]);
   let dataHora = $state(formatarDataHoraLocal(new Date()));
   let imagem = $state(null);
+  let imagemPreview = $state('');
   let alimentoId = $state('');
   let massa = $state('');
   let erro = $state('');
@@ -20,8 +21,14 @@
   }
 
   function selecionarImagem(event) {
+    if (imagemPreview) URL.revokeObjectURL(imagemPreview);
     imagem = event.currentTarget.files?.[0] ?? null;
+    imagemPreview = imagem?.type.startsWith('image/') ? URL.createObjectURL(imagem) : '';
   }
+
+  onDestroy(() => {
+    if (imagemPreview) URL.revokeObjectURL(imagemPreview);
+  });
 
   async function salvarConsumo(event) {
     event.preventDefault();
@@ -55,6 +62,9 @@
     <div class="form-row">
       <label for="imagem-consumo">Imagem</label>
       <input id="imagem-consumo" type="file" accept="image/*" onchange={selecionarImagem} />
+      {#if imagemPreview}
+        <img class="foto-preview" src={imagemPreview} alt="Prévia da imagem selecionada" />
+      {/if}
     </div>
 
     <div class="form-row">

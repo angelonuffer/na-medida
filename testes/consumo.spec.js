@@ -17,6 +17,20 @@ test('exibe o formulário de cadastro de Consumo', async ({ page }) => {
   await expect(page).toHaveScreenshot('cadastro-consumo.png', { fullPage: true });
 });
 
+test('exibe uma miniatura ao selecionar imagem para o consumo', async ({ page }) => {
+  await page.goto('/');
+  await page.clock.install({ time: new Date('2026-01-02T12:00:00') });
+  await page.getByRole('button', { name: 'Cadastrar consumo' }).click();
+  await page.getByLabel('Imagem').setInputFiles({
+    name: 'foto.png',
+    mimeType: 'image/png',
+    buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/pQAAAABJRU5ErkJggg==', 'base64')
+  });
+
+  const miniatura = page.getByRole('img', { name: 'Prévia da imagem selecionada' });
+  await expect(page).toHaveScreenshot('cadastro-consumo-com-imagem.png', { fullPage: true });
+});
+
 test('exibe visualmente um consumo após o cadastro', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('button', { name: /Alimentos/ }).click();
