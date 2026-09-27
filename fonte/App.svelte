@@ -9,7 +9,7 @@
   import Medidas from './pages/Medidas.svelte';
   import CadastroMedidas from './pages/CadastroMedidas.svelte';
   import DetalheMedida from './pages/DetalheMedida.svelte';
-  import { arquivarAlimento, restaurarAlimento } from './db.js';
+  import { arquivarAlimento, listarMedidas, restaurarAlimento } from './db.js';
 
   let paginaAtiva = 'consumo';
   let alimentoSelecionado = null;
@@ -86,6 +86,12 @@
   function voltarParaMedidas() {
     medidaSelecionada = null;
     paginaAtiva = 'medidas';
+  }
+
+  async function salvarEdicaoMedida() {
+    const medidas = await listarMedidas();
+    medidaSelecionada = medidas.find((medida) => medida.id === medidaSelecionada.id);
+    paginaAtiva = 'detalhe-medida';
   }
 
   async function arquivarSelecionado(id) {
@@ -171,6 +177,12 @@
         onSalvar={() => (paginaAtiva = 'medidas')}
         onVoltar={() => (paginaAtiva = 'medidas')}
       />
+    {:else if paginaAtiva === 'editar-medida' && medidaSelecionada}
+      <CadastroMedidas
+        medida={medidaSelecionada}
+        onSalvar={salvarEdicaoMedida}
+        onVoltar={() => (paginaAtiva = 'detalhe-medida')}
+      />
     {:else if paginaAtiva === 'arquivo'}
       <Arquivo onSelecionar={(alimento) => abrirDetalhe(alimento, 'arquivo')} />
     {:else if paginaAtiva === 'detalhe-alimento' && alimentoSelecionado}
@@ -181,7 +193,11 @@
         onRestaurar={restaurarSelecionado}
       />
     {:else if paginaAtiva === 'detalhe-medida' && medidaSelecionada}
-      <DetalheMedida medida={medidaSelecionada} onVoltar={voltarParaMedidas} />
+      <DetalheMedida
+        medida={medidaSelecionada}
+        onVoltar={voltarParaMedidas}
+        onEditar={() => (paginaAtiva = 'editar-medida')}
+      />
     {:else}
       <Consumo onCadastrar={() => (paginaAtiva = 'cadastro-consumo')} />
     {/if}

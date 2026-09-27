@@ -1,10 +1,11 @@
 <script>
-  import { adicionarMedida } from '../db.js';
+  import { untrack } from 'svelte';
+  import { adicionarMedida, atualizarMedida } from '../db.js';
 
-  let { onSalvar, onVoltar } = $props();
-  let data = $state(formatarDataLocal(new Date()));
-  let peso = $state('');
-  let alturaCm = $state('');
+  let { medida = null, onSalvar, onVoltar } = $props();
+  let data = $state(untrack(() => medida?.data ?? formatarDataLocal(new Date())));
+  let peso = $state(untrack(() => medida?.peso?.toString() ?? ''));
+  let alturaCm = $state(untrack(() => medida?.alturaCm?.toString() ?? ''));
   let imc = $derived(
     Number(peso) > 0 && Number(alturaCm) > 0
       ? (Number(peso) / (Number(alturaCm) / 100) ** 2).toFixed(2)
@@ -64,18 +65,23 @@
 
   async function salvar(event) {
     event.preventDefault();
-    await adicionarMedida({
+    const registro = {
       data,
       peso: Number(peso),
       alturaCm: Number(alturaCm),
       imc: Number(imc)
-    });
+    };
+    if (medida) {
+      await atualizarMedida(medida.id, registro);
+    } else {
+      await adicionarMedida(registro);
+    }
     onSalvar();
   }
 </script>
 
 <section id="cadastro-medidas" class="page-section active">
-  <h1>Registrar medidas</h1>
+  <h1>{medida ? 'Editar registro' : 'Registrar medidas'}</h1>
   <p>Informe a data, o peso e a altura.</p>
 
   <form class="form-medidas" onsubmit={salvar}>
@@ -142,7 +148,7 @@
       </section>
     {/if}
 
-    <button type="submit" class="btn-salvar">Salvar dados</button>
+    <button type="submit" class="btn-salvar">{medida ? 'Salvar alterações' : 'Salvar dados'}</button>
     <button type="button" class="btn-voltar" onclick={onVoltar}>Voltar às medidas</button>
   </form>
 </section>

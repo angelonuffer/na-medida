@@ -96,6 +96,40 @@ export async function adicionarMedida(registro) {
   });
 }
 
+export async function atualizarMedida(id, registro) {
+  const db = await abrirBanco();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_MEDIDAS, 'readwrite');
+    const store = tx.objectStore(STORE_MEDIDAS);
+    const getRequest = store.get(id);
+
+    getRequest.onsuccess = () => {
+      const medidaAtual = getRequest.result;
+      if (!medidaAtual) {
+        reject(new Error('Medida não encontrada.'));
+        return;
+      }
+
+      const versaoAnterior = {
+        data: medidaAtual.data,
+        peso: medidaAtual.peso,
+        alturaCm: medidaAtual.alturaCm,
+        imc: medidaAtual.imc,
+        editadoEm: new Date().toISOString()
+      };
+      const request = store.put({
+        ...medidaAtual,
+        ...registro,
+        id,
+        historico: [...(medidaAtual.historico ?? []), versaoAnterior]
+      });
+      request.onsuccess = () => resolve();
+      request.onerror = () => reject(request.error);
+    };
+    getRequest.onerror = () => reject(getRequest.error);
+  });
+}
+
 export async function listarMedidas() {
   const db = await abrirBanco();
   return new Promise((resolve, reject) => {

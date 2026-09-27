@@ -1,5 +1,5 @@
 <script>
-  let { medida, onVoltar } = $props();
+  let { medida, onVoltar, onEditar } = $props();
 
   function formatarData(data) {
     const [ano, mes, dia] = data.split('-');
@@ -8,6 +8,10 @@
 
   function formatarNumero(valor, maximoDecimais = 2) {
     return new Intl.NumberFormat('pt-BR', { maximumFractionDigits: maximoDecimais }).format(Number(valor));
+  }
+
+  function formatarDataHora(dataHora) {
+    return new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(dataHora));
   }
 
   function calcularRecomendacoes(pesoInformado, alturaInformada) {
@@ -46,6 +50,11 @@
     </div>
   </div>
 
+  <button class="btn-salvar btn-editar-medida" type="button" onclick={onEditar}>
+    <span class="material-symbols-outlined">edit</span>
+    <span>Editar registro</span>
+  </button>
+
   <section class="detalhe-nutricao" aria-labelledby="titulo-medida">
     <h2 id="titulo-medida">Valores registrados</h2>
     <dl>
@@ -69,6 +78,26 @@
             <dd>
               <span>Mín. {formatarNumero(item.minimo, item.unidade === 'kcal' ? 0 : 1)} {item.unidade}</span>
               <span>Máx. {formatarNumero(item.maximo, item.unidade === 'kcal' ? 0 : 1)} {item.unidade}</span>
+            </dd>
+          </div>
+        {/each}
+      </dl>
+    </section>
+  {/if}
+
+  {#if medida.historico?.length}
+    <section class="detalhe-nutricao historico-medida" aria-labelledby="titulo-historico-medida">
+      <h2 id="titulo-historico-medida">Versões anteriores</h2>
+      <dl>
+        {#each [...medida.historico].reverse() as versao, indice}
+          <div class="versao-medida">
+            <dt>Versão {medida.historico.length - indice}</dt>
+            <dd>
+              <span>{formatarData(versao.data)}: {formatarNumero(versao.peso)} kg</span>
+              {#if versao.alturaCm}
+                <span>{formatarNumero(versao.alturaCm / 100)} m</span>
+              {/if}
+              <time datetime={versao.editadoEm}>Alterada em {formatarDataHora(versao.editadoEm)}</time>
             </dd>
           </div>
         {/each}

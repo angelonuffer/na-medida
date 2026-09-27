@@ -118,3 +118,31 @@ test('abre a tela de detalhes ao clicar em uma medida', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'Faixas diárias recomendadas' })).toBeVisible();
   await expect(page.locator('.lista-recomendacoes')).toContainText('Proteínas');
 });
+
+test('edita um registro e preserva a versão anterior no histórico', async ({ page }) => {
+  await page.clock.install({ time: new Date('2026-01-02T12:00:00') });
+  await page.goto('/');
+  await page.getByRole('button', { name: /Medidas/ }).click();
+  await page.getByRole('button', { name: 'Registrar medidas' }).click();
+  await page.getByLabel('Data').fill('2026-01-04');
+  await page.getByLabel('Peso (kg)').fill('72.3');
+  await page.getByLabel('Altura (cm)').fill('168');
+  await page.getByRole('button', { name: 'Salvar dados' }).click();
+  await page.locator('.card-medida').click();
+
+  await page.getByRole('button', { name: 'Editar registro' }).click();
+  await expect(page.getByRole('heading', { name: 'Editar registro' })).toBeVisible();
+  await expect(page.getByLabel('Peso (kg)')).toHaveValue('72.3');
+  await page.getByLabel('Peso (kg)').fill('70.5');
+  await page.getByRole('button', { name: 'Salvar alterações' }).click();
+
+  await expect(page.locator('#detalhe-medida')).toContainText('70,5 kg');
+  await expect(page.locator('#detalhe-medida')).toContainText('Versão 1');
+  await expect(page.locator('#detalhe-medida')).toContainText('72,3 kg');
+
+  await page.reload();
+  await page.getByRole('button', { name: /Medidas/ }).click();
+  await page.locator('.card-medida').click();
+  await expect(page.locator('#detalhe-medida')).toContainText('70,5 kg');
+  await expect(page.locator('#detalhe-medida')).toContainText('72,3 kg');
+});

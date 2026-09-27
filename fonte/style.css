@@ -684,6 +684,13 @@ p {
     background-color: #2980b9;
 }
 
+.btn-editar-medida {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 24px;
+}
+
 .btn-voltar {
     align-self: flex-start;
     background: transparent;
@@ -913,6 +920,24 @@ p {
 .detalhe-nutricao dd {
     color: #2c3e50;
     font-weight: 600;
+}
+
+.historico-medida {
+    margin-top: 24px;
+}
+
+.historico-medida .versao-medida dd {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+    text-align: right;
+}
+
+.versao-medida time {
+    color: #667085;
+    font-size: 13px;
+    font-weight: 400;
 }
 
 @media (max-width: 700px) {
