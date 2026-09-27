@@ -179,6 +179,31 @@ test('exibe sugestões filtradas de alimentos ao digitar no campo de busca', asy
   await expect(sugestoes).toContainText('Cadastrar "Aveia"');
 });
 
+test('seleciona um alimento da TACO e calcula o resumo sem cadastrá-lo no catálogo pessoal', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: /Consumo/ }).click();
+  await page.getByRole('button', { name: 'Cadastrar consumo' }).click();
+  await page.getByLabel('Alimento').fill('Arroz integral cozido');
+  await page.getByRole('option', { name: 'TACO/Arroz integral cozido' }).click();
+  await page.getByLabel('Massa (g)').fill('45');
+  await page.getByRole('button', { name: 'Salvar consumo' }).click();
+
+  const energia = page.locator('.resumo-nutricional-item').filter({ hasText: 'Valor energético' }).locator('strong');
+  await expect(energia).toHaveText('55,8');
+
+  const quantidadeAlimentosPessoais = await page.evaluate(() => new Promise((resolve, reject) => {
+    const request = indexedDB.open('na-medida');
+    request.onsuccess = () => {
+      const transaction = request.result.transaction('alimentos', 'readonly');
+      const alimentos = transaction.objectStore('alimentos').count();
+      alimentos.onsuccess = () => resolve(alimentos.result);
+      alimentos.onerror = () => reject(alimentos.error);
+    };
+    request.onerror = () => reject(request.error);
+  }));
+  expect(quantidadeAlimentosPessoais).toBe(0);
+});
+
 test('exibe uma miniatura ao selecionar imagem para o consumo', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('button', { name: /Consumo/ }).click();

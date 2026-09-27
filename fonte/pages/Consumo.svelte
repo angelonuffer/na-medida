@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import { listarAlimentos, listarConsumos, listarMedidas } from '../db.js';
   import { calcularRecomendacoes, calcularRecomendacoesMedias } from '../recomendacoes.js';
+  import { alimentosTaco } from '../taco.js';
 
   let { onCadastrar } = $props();
   let consumos = $state([]);
@@ -83,7 +84,7 @@
       listarMedidas()
     ]);
     consumos = consumosCarregados;
-    alimentos = [...alimentosAtivos, ...alimentosArquivados];
+    alimentos = [...alimentosAtivos, ...alimentosArquivados, ...alimentosTaco];
     medidas = medidasCarregadas;
   });
 

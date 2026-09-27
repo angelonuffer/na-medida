@@ -2,6 +2,7 @@
   import { onDestroy, onMount } from 'svelte';
   import { pipeline } from '@huggingface/transformers';
   import { adicionarAlimento, adicionarConsumo, listarAlimentos } from '../db.js';
+  import { alimentosTaco } from '../taco.js';
 
   let { onSalvar, onVoltar } = $props();
   let alimentos = $state([]);
@@ -29,13 +30,21 @@
   let massa = $state('');
   let erro = $state('');
   let botaoIaDesabilitado = $derived(!imagem || classificando);
+  let termoBusca = $derived(alimentoBusca.trim().replace(/^taco\s*\/\s*/i, '').toLocaleLowerCase('pt-BR'));
   let alimentosFiltrados = $derived(
-    alimentos.filter((alimento) => alimento.nome.toLocaleLowerCase('pt-BR').includes(alimentoBusca.trim().toLocaleLowerCase('pt-BR')))
+    alimentos.filter((alimento) => alimento.nome.toLocaleLowerCase('pt-BR').includes(termoBusca))
+  );
+  let alimentosTacoFiltrados = $derived(
+    termoBusca
+      ? alimentosTaco.filter((alimento) => alimento.nome.toLocaleLowerCase('pt-BR').includes(termoBusca)).slice(0, 10)
+      : []
   );
   let mostrarOpcaoCadastro = $derived(
-    Boolean(alimentoBusca.trim()) && !alimentos.some((alimento) => alimento.nome.trim().toLocaleLowerCase('pt-BR') === alimentoBusca.trim().toLocaleLowerCase('pt-BR'))
+    Boolean(termoBusca)
+      && !alimentos.some((alimento) => alimento.nome.trim().toLocaleLowerCase('pt-BR') === termoBusca)
+      && !alimentosTaco.some((alimento) => alimento.nome.trim().toLocaleLowerCase('pt-BR') === termoBusca)
   );
-  let quantidadeSugestoes = $derived(alimentosFiltrados.length + Number(mostrarOpcaoCadastro));
+  let quantidadeSugestoes = $derived(alimentosFiltrados.length + alimentosTacoFiltrados.length + Number(mostrarOpcaoCadastro));
 
   onMount(async () => {
     alimentos = await listarAlimentos();
@@ -235,7 +244,9 @@
       event.preventDefault();
       const indice = sugestaoAtiva >= 0 ? sugestaoAtiva : 0;
       if (indice < alimentosFiltrados.length) selecionarAlimento(alimentosFiltrados[indice]);
-      else iniciarCadastroAlimento();
+      else if (indice < alimentosFiltrados.length + alimentosTacoFiltrados.length) {
+        selecionarAlimento(alimentosTacoFiltrados[indice - alimentosFiltrados.length]);
+      } else iniciarCadastroAlimento();
     }
   }
 
@@ -245,7 +256,8 @@
 
   async function salvarConsumo(event) {
     event.preventDefault();
-    let alimento = alimentos.find((item) => String(item.id) === alimentoId);
+    let alimento = alimentos.find((item) => String(item.id) === alimentoId)
+      ?? alimentosTaco.find((item) => String(item.id) === alimentoId);
     if (modoCadastroAlimento) {
       const alimentoNovo = {
         nome: alimentoBusca.trim(),
@@ -320,7 +332,9 @@
             ? undefined
             : sugestaoAtiva < alimentosFiltrados.length
               ? `sugestao-alimento-${alimentosFiltrados[sugestaoAtiva]?.id}`
-              : 'sugestao-cadastro-alimento'}
+              : sugestaoAtiva < alimentosFiltrados.length + alimentosTacoFiltrados.length
+                ? `sugestao-taco-${alimentosTacoFiltrados[sugestaoAtiva - alimentosFiltrados.length]?.id}`
+                : 'sugestao-cadastro-alimento'}
           oninput={atualizarBuscaAlimento}
           onkeydown={navegarSugestoes}
           onfocus={() => { if (!alimentoId) sugestoesAbertas = true; }}
@@ -358,13 +372,32 @@
               {alimento.nome}
             </li>
           {/each}
+          {#each alimentosTacoFiltrados as alimento, indice (alimento.id)}
+            <li
+              id={`sugestao-taco-${alimento.id}`}
+              role="option"
+              tabindex="-1"
+              aria-selected={sugestaoAtiva === alimentosFiltrados.length + indice}
+              onmouseenter={() => { sugestaoAtiva = alimentosFiltrados.length + indice; }}
+              onmousedown={(event) => event.preventDefault()}
+              onkeydown={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault();
+                  selecionarAlimento(alimento);
+                }
+              }}
+              onclick={() => selecionarAlimento(alimento)}
+            >
+              TACO/{alimento.nome}
+            </li>
+          {/each}
           {#if mostrarOpcaoCadastro}
             <li
               id="sugestao-cadastro-alimento"
               role="option"
               tabindex="-1"
-              aria-selected={sugestaoAtiva === alimentosFiltrados.length}
-              onmouseenter={() => { sugestaoAtiva = alimentosFiltrados.length; }}
+              aria-selected={sugestaoAtiva === alimentosFiltrados.length + alimentosTacoFiltrados.length}
+              onmouseenter={() => { sugestaoAtiva = alimentosFiltrados.length + alimentosTacoFiltrados.length; }}
               onmousedown={(event) => event.preventDefault()}
               onkeydown={(event) => {
                 if (event.key === 'Enter' || event.key === ' ') {
@@ -420,7 +453,7 @@
         </fieldset>
       {/if}
       {#if alimentos.length === 0}
-        <small>Nenhum alimento cadastrado.</small>
+        <small>Nenhum alimento pessoal cadastrado.</small>
       {/if}
     </div>
 
