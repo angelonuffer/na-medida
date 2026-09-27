@@ -6,6 +6,7 @@
   let consumos = $state([]);
   let alimentos = $state([]);
   let diaSelecionado = $state(formatarDataLocal(new Date()));
+  let periodoSelecionado = $state('dia');
   let nutrienteSelecionado = $state(null);
 
   const nutrientes = [
@@ -17,14 +18,29 @@
     { chave: 'massa', nome: 'Massa', unidade: 'g' }
   ];
 
-  let resumo = $derived(calcularResumo(consumos, alimentos, diaSelecionado));
+  let resumo = $derived(calcularResumo(consumos, alimentos, diaSelecionado).map((item) => ({
+    ...item,
+    valor: periodoSelecionado === 'dia' ? item.dia : item.media
+  })));
   let consumosDoDia = $derived(consumos.filter((consumo) => consumo.dataHora.slice(0, 10) === diaSelecionado));
+  let consumosDaSemana = $derived.by(() => {
+    if (!diaSelecionado) return [];
+    const [ano, mes, dia] = diaSelecionado.split('-').map(Number);
+    const inicioSemana = new Date(ano, mes - 1, dia);
+    inicioSemana.setDate(inicioSemana.getDate() - 7);
+    const inicioChave = formatarDataLocal(inicioSemana);
+    return consumos.filter((consumo) => {
+      const dataConsumo = consumo.dataHora.slice(0, 10);
+      return dataConsumo >= inicioChave && dataConsumo < diaSelecionado;
+    });
+  });
+  let consumosExibidos = $derived(periodoSelecionado === 'dia' ? consumosDoDia : consumosDaSemana);
   let gruposConsumos = $derived.by(() => {
     if (!nutrienteSelecionado) return [];
 
     const alimentosPorId = new Map(alimentos.map((alimento) => [String(alimento.id), alimento]));
     const grupos = new Map();
-    for (const consumo of consumosDoDia) {
+    for (const consumo of consumosExibidos) {
       const alimento = alimentosPorId.get(String(consumo.alimentoId));
       const chaveGrupo = String(consumo.alimentoId ?? consumo.alimentoNome);
       const grupo = grupos.get(chaveGrupo) ?? {
@@ -131,16 +147,43 @@
 <section id="consumo" class="page-section active">
   <h1>Consumo</h1>
   <p>Aqui você pode gerenciar e planejar seu consumo.</p>
-  <div class="seletor-dia">
-    <label for="dia-consumo">Dia</label>
-    <div class="navegacao-dia">
-      <button type="button" aria-label="Dia anterior" title="Dia anterior" onclick={() => alterarDia(-1)}>
-        <span class="material-symbols-outlined">arrow_back</span>
-      </button>
-      <input id="dia-consumo" type="date" bind:value={diaSelecionado} />
-      <button type="button" aria-label="Próximo dia" title="Próximo dia" onclick={() => alterarDia(1)}>
-        <span class="material-symbols-outlined">arrow_forward</span>
-      </button>
+  <div class="filtros-consumo">
+    <div class="seletor-dia">
+      <label for="dia-consumo">Dia</label>
+      <div class="navegacao-dia">
+        <button type="button" aria-label="Dia anterior" title="Dia anterior" onclick={() => alterarDia(-1)}>
+          <span class="material-symbols-outlined">arrow_back</span>
+        </button>
+        <input id="dia-consumo" type="date" bind:value={diaSelecionado} />
+        <button type="button" aria-label="Próximo dia" title="Próximo dia" onclick={() => alterarDia(1)}>
+          <span class="material-symbols-outlined">arrow_forward</span>
+        </button>
+      </div>
+    </div>
+    <div class="seletor-periodo" aria-label="Período do resumo">
+      <span>Período</span>
+      <div>
+        <button
+          type="button"
+          class:selecionado={periodoSelecionado === 'dia'}
+          aria-label="Exibir dia"
+          aria-pressed={periodoSelecionado === 'dia'}
+          title="Dia"
+          onclick={() => periodoSelecionado = 'dia'}
+        >
+          <span class="material-symbols-outlined">today</span>
+        </button>
+        <button
+          type="button"
+          class:selecionado={periodoSelecionado === 'semana'}
+          aria-label="Exibir semana"
+          aria-pressed={periodoSelecionado === 'semana'}
+          title="Semana"
+          onclick={() => periodoSelecionado = 'semana'}
+        >
+          <span class="material-symbols-outlined">calendar_view_week</span>
+        </button>
+      </div>
     </div>
   </div>
   <div class="resumo-nutricional" aria-label="Resumo nutricional">
@@ -156,12 +199,13 @@
         <h2>{item.nome} ({item.unidade})</h2>
         <div class="resumo-nutricional-valores">
           <p>
-            <span class="material-symbols-outlined" role="img" aria-label="Valor do dia selecionado" title="Valor do dia selecionado">today</span>
-            <strong>{formatarValor(item.dia)}</strong>
-          </p>
-          <p>
-            <span class="material-symbols-outlined" role="img" aria-label="Média dos 7 dias anteriores" title="Média dos 7 dias anteriores">calendar_view_week</span>
-            <strong>{formatarValor(item.media)}</strong>
+            <span
+              class="material-symbols-outlined"
+              role="img"
+              aria-label={periodoSelecionado === 'dia' ? 'Valor do dia selecionado' : 'Média dos 7 dias anteriores'}
+              title={periodoSelecionado === 'dia' ? 'Valor do dia selecionado' : 'Média dos 7 dias anteriores'}
+            >{periodoSelecionado === 'dia' ? 'today' : 'calendar_view_week'}</span>
+            <strong>{formatarValor(item.valor)}</strong>
           </p>
         </div>
       </button>
@@ -171,7 +215,7 @@
     <span class="material-symbols-outlined">add</span>
     <span>Consumo</span>
   </button>
-  {#if consumosDoDia.length === 0}
+  {#if consumosExibidos.length === 0}
     <div class="content-placeholder"></div>
   {:else if nutrienteSelecionado}
     <div class="lista-consumos agrupada-por-nutriente">
@@ -194,7 +238,7 @@
     </div>
   {:else}
     <div class="lista-consumos">
-      {#each consumosDoDia as consumo (consumo.id)}
+      {#each consumosExibidos as consumo (consumo.id)}
         <article class="card-consumo">
           <div>
             <h2>{consumo.alimentoNome}</h2>

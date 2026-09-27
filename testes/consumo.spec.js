@@ -190,7 +190,7 @@ test('exibe um consumo após o cadastro e persiste a imagem no IndexedDB', async
   expect(imagemSalva).toEqual({ nome: 'foto.png', tipo: 'image/png' });
 });
 
-test('calcula a média dos dias com registros na tela de consumo', async ({ page }) => {
+test('alterna o resumo e os registros entre dia e semana', async ({ page }) => {
   await page.clock.install({ time: new Date('2026-01-02T12:00:00') });
   await page.goto('/');
   await prepararBanco(page, [
@@ -200,10 +200,12 @@ test('calcula a média dos dias com registros na tela de consumo', async ({ page
       tabelaNutricional: { valorEnergetico: 100, gorduras: 10, carboidratos: 20, proteinas: 5, fibras: 2 }
     }
   ], [
-    { dataHora: '2026-01-02T12:00', alimentoId: 1, alimentoNome: 'Alimento do resumo', massa: 100 },
-    { dataHora: '2026-01-01T12:00', alimentoId: 1, alimentoNome: 'Alimento do resumo', massa: 700 },
-    { dataHora: '2026-01-01T13:00', alimentoId: 1, alimentoNome: 'Alimento do resumo', massa: 300 },
-    { dataHora: '2025-12-29T12:00', alimentoId: 1, alimentoNome: 'Alimento do resumo', massa: 200 }
+    { dataHora: '2026-01-02T12:00', alimentoId: 1, alimentoNome: 'Consumo do dia', massa: 100 },
+    { dataHora: '2026-01-01T12:00', alimentoId: 1, alimentoNome: 'Consumo da semana', massa: 700 },
+    { dataHora: '2026-01-01T13:00', alimentoId: 1, alimentoNome: 'Consumo da semana', massa: 300 },
+    { dataHora: '2025-12-29T12:00', alimentoId: 1, alimentoNome: 'Consumo da semana', massa: 200 },
+    { dataHora: '2025-12-26T12:00', alimentoId: 1, alimentoNome: 'Consumo da semana', massa: 400 },
+    { dataHora: '2025-12-25T12:00', alimentoId: 1, alimentoNome: 'Fora da semana', massa: 900 }
   ]);
   await page.reload();
 
@@ -220,18 +222,17 @@ test('calcula a média dos dias com registros na tela de consumo', async ({ page
       .locator('strong')
       .first()
   ).toHaveText('100');
+  await expect(resumo.locator('.resumo-nutricional-item').first().locator('strong')).toHaveCount(1);
+  await page.getByRole('button', { name: 'Exibir semana' }).click();
   await expect(
     resumo.locator('.resumo-nutricional-item')
       .filter({ hasText: 'Massa (g)' })
       .locator('strong')
-      .nth(1)
-  ).toHaveText('600');
-  await expect(
-    page.locator('.resumo-nutricional-item')
-      .filter({ hasText: 'Valor energético' })
-      .locator('strong')
-      .nth(1)
-  ).toHaveText('600');
+  ).toHaveText(['533,3']);
+  await expect(page.locator('.card-consumo')).toHaveCount(4);
+  await expect(page.locator('.lista-consumos')).toContainText('Consumo da semana');
+  await expect(page.locator('.lista-consumos')).not.toContainText('Consumo do dia');
+  await expect(page.locator('.lista-consumos')).not.toContainText('Fora da semana');
 });
 
 test('agrupa e ordena consumos pelo nutriente selecionado', async ({ page }) => {
