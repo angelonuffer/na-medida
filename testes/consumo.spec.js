@@ -44,8 +44,13 @@ test('filtra os consumos e o resumo pelo dia selecionado', async ({ page }) => {
 
   const seletorDia = page.locator('#dia-consumo');
   await expect(page.locator('.card-consumo')).toContainText('Aveia em flocos');
-  await expect(page.locator('.card-consumo')).toContainText('100 g');
   await expect(page.locator('.resumo-nutricional')).toContainText('Valor energético');
+  await expect(
+    page.locator('.resumo-nutricional-item')
+      .filter({ hasText: 'Massa (g)' })
+      .locator('strong')
+      .first()
+  ).toHaveText('100');
 
   await seletorDia.fill('2026-01-01');
   await page.locator('.content-placeholder').waitFor({ state: 'visible' });
@@ -239,5 +244,10 @@ test('cadastra um alimento novo com tabela nutricional ao salvar o consumo', asy
   await page.getByRole('button', { name: 'Salvar consumo' }).click();
 
   await expect(page.locator('.card-consumo')).toContainText('Aveia');
-  await expect(page.locator('.card-consumo')).toContainText('45 g');
+  await expect(
+    page.locator('.resumo-nutricional-item')
+      .filter({ hasText: 'Massa (g)' })
+      .locator('strong')
+      .first()
+  ).toHaveText('45');
 });
