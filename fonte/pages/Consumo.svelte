@@ -199,12 +199,6 @@
         <h2>{item.nome} ({item.unidade})</h2>
         <div class="resumo-nutricional-valores">
           <p>
-            <span
-              class="material-symbols-outlined"
-              role="img"
-              aria-label={periodoSelecionado === 'dia' ? 'Valor do dia selecionado' : 'Média dos 7 dias anteriores'}
-              title={periodoSelecionado === 'dia' ? 'Valor do dia selecionado' : 'Média dos 7 dias anteriores'}
-            >{periodoSelecionado === 'dia' ? 'today' : 'calendar_view_week'}</span>
             <strong>{formatarValor(item.valor)}</strong>
           </p>
         </div>
