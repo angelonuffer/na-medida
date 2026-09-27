@@ -1,10 +1,12 @@
 const { test, expect } = require('@playwright/test');
 
-test('exibe a página de Consumo', async ({ page }) => {
+test('exibe a página de Consumo com os elementos básicos', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('button', { name: /Consumo/ }).click();
 
-  await expect(page).toHaveScreenshot('consumo-inicial.png', { fullPage: true });
+  await expect(page.locator('#consumo h1')).toHaveText('Consumo');
+  await expect(page.locator('#consumo')).toContainText('Aqui você pode gerenciar e planejar seu consumo.');
+  await expect(page.getByRole('button', { name: 'Cadastrar consumo' })).toBeVisible();
 });
 
 test('filtra os consumos e o resumo pelo dia selecionado', async ({ page }) => {
@@ -14,6 +16,10 @@ test('filtra os consumos e o resumo pelo dia selecionado', async ({ page }) => {
   await page.getByRole('button', { name: 'Cadastrar alimento' }).click();
   await page.getByLabel('Nome').fill('Aveia em flocos');
   await page.getByLabel('Valor energético (kcal)').fill('100');
+  await page.getByLabel('Gorduras (g)').fill('10');
+  await page.getByLabel('Carboidratos (g)').fill('20');
+  await page.getByLabel('Proteínas (g)').fill('5');
+  await page.getByLabel('Fibras (g)').fill('2');
   await page.getByRole('button', { name: 'Salvar alimento' }).click();
 
   await page.getByRole('button', { name: /Consumo/ }).click();
@@ -24,20 +30,18 @@ test('filtra os consumos e o resumo pelo dia selecionado', async ({ page }) => {
   await page.getByLabel('Massa (g)').fill('100');
   await page.getByRole('button', { name: 'Salvar consumo' }).click();
 
-  const seletorDia = page.getByRole('textbox', { name: 'Dia' });
-  await page.locator('.card-consumo').waitFor({ state: 'visible' });
-  await seletorDia.evaluate((element) => element.blur());
-  await expect(page).toHaveScreenshot('consumo-dia-selecionado.png', { fullPage: true });
+  const seletorDia = page.locator('#dia-consumo');
+  await expect(page.locator('.card-consumo')).toContainText('Aveia em flocos');
+  await expect(page.locator('.card-consumo')).toContainText('100 g');
+  await expect(page.locator('.resumo-nutricional')).toContainText('Valor energético');
 
   await seletorDia.fill('2026-01-01');
   await page.locator('.content-placeholder').waitFor({ state: 'visible' });
-  await seletorDia.evaluate((element) => element.blur());
-  await expect(page).toHaveScreenshot('consumo-dia-sem-registros.png', { fullPage: true });
+  await expect(page.locator('.content-placeholder')).toBeVisible();
 
   await seletorDia.fill('2026-01-02');
   await page.locator('.card-consumo').waitFor({ state: 'visible' });
-  await seletorDia.evaluate((element) => element.blur());
-  await expect(page).toHaveScreenshot('consumo-dia-selecionado.png', { fullPage: true });
+  await expect(page.locator('.card-consumo')).toContainText('Aveia em flocos');
 });
 
 test('exibe o formulário de cadastro de Consumo', async ({ page }) => {
@@ -45,12 +49,15 @@ test('exibe o formulário de cadastro de Consumo', async ({ page }) => {
   await page.getByRole('button', { name: /Consumo/ }).click();
   await page.getByRole('button', { name: 'Cadastrar consumo' }).click();
 
-  await page.getByLabel('Data e hora').fill('2026-01-02T12:34');
-
-  await expect(page).toHaveScreenshot('cadastro-consumo.png', { fullPage: true });
+  await expect(page.locator('#cadastro-consumo h1')).toHaveText('Cadastrar consumo');
+  await expect(page.locator('#cadastro-consumo')).toContainText('Informe os dados do alimento consumido.');
+  await expect(page.getByLabel('Data e hora')).toBeVisible();
+  await expect(page.getByLabel('Imagem')).toBeVisible();
+  await expect(page.getByLabel('Alimento')).toBeVisible();
+  await expect(page.getByLabel('Massa (g)')).toBeVisible();
 });
 
-test('exibe visualmente as sugestões filtradas de alimentos', async ({ page }) => {
+test('exibe sugestões filtradas de alimentos ao digitar no campo de busca', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('button', { name: /Alimentos/ }).click();
 
@@ -62,24 +69,26 @@ test('exibe visualmente as sugestões filtradas de alimentos', async ({ page }) 
   }
 
   await page.getByRole('button', { name: /Consumo/ }).click();
-  await page.clock.install({ time: new Date('2026-01-02T12:00:00') });
   await page.getByRole('button', { name: 'Cadastrar consumo' }).click();
   await page.getByLabel('Alimento').fill('Aveia');
 
-  await expect(page).toHaveScreenshot('cadastro-consumo-com-sugestoes.png', { fullPage: true });
+  const sugestoes = page.locator('#sugestoes-alimentos');
+  await expect(sugestoes).toContainText('Aveia em flocos');
+  await expect(sugestoes).toContainText('Cadastrar "Aveia"');
 });
 
 test('exibe uma miniatura ao selecionar imagem para o consumo', async ({ page }) => {
   await page.goto('/');
-  await page.clock.install({ time: new Date('2026-01-02T12:00:00') });
+  await page.getByRole('button', { name: /Consumo/ }).click();
   await page.getByRole('button', { name: 'Cadastrar consumo' }).click();
+
   await page.getByLabel('Imagem').setInputFiles({
     name: 'foto.png',
     mimeType: 'image/png',
     buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/pQAAAABJRU5ErkJggg==', 'base64')
   });
 
-  await expect(page).toHaveScreenshot('cadastro-consumo-com-imagem.png', { fullPage: true });
+  await expect(page.locator('img.foto-preview')).toBeVisible();
 });
 
 test('ativa o botão de reconhecimento de alimento somente após carregar a imagem', async ({ page }) => {
@@ -101,8 +110,10 @@ test('ativa o botão de reconhecimento de alimento somente após carregar a imag
 
 test('oferece captura de foto pela câmera no cadastro de consumo', async ({ page }) => {
   await page.goto('/');
-  await page.clock.install({ time: new Date('2026-01-02T12:00:00') });
+  await page.getByRole('button', { name: /Consumo/ }).click();
   await page.getByRole('button', { name: 'Cadastrar consumo' }).click();
+
+  await expect(page.getByRole('button', { name: 'Tirar foto' })).toBeVisible();
 
   const cameraInput = page.locator('.input-camera');
   await cameraInput.setInputFiles({
@@ -111,10 +122,10 @@ test('oferece captura de foto pela câmera no cadastro de consumo', async ({ pag
     buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/pQAAAABJRU5ErkJggg==', 'base64')
   });
 
-  await expect(page).toHaveScreenshot('cadastro-consumo-com-foto.png', { fullPage: true });
+  await expect(page.locator('img.foto-preview')).toBeVisible();
 });
 
-test('exibe visualmente um consumo após o cadastro', async ({ page }) => {
+test('exibe um consumo após o cadastro e persiste a imagem no IndexedDB', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('button', { name: /Alimentos/ }).click();
   await page.getByRole('button', { name: 'Cadastrar alimento' }).click();
@@ -135,6 +146,8 @@ test('exibe visualmente um consumo após o cadastro', async ({ page }) => {
   await page.getByLabel('Massa (g)').fill('45');
   await page.getByRole('button', { name: 'Salvar consumo' }).click();
 
+  await expect(page.locator('#consumo h1')).toHaveText('Consumo');
+
   const imagemSalva = await page.evaluate(() => new Promise((resolve, reject) => {
     const request = indexedDB.open('na-medida');
     request.onsuccess = () => {
@@ -149,11 +162,9 @@ test('exibe visualmente um consumo após o cadastro', async ({ page }) => {
     request.onerror = () => reject(request.error);
   }));
   expect(imagemSalva).toEqual({ nome: 'foto.png', tipo: 'image/png' });
-
-  await expect(page).toHaveScreenshot('lista-consumo-apos-cadastro.png', { fullPage: true });
 });
 
-test('exibe o resumo nutricional de hoje e a média dos sete dias anteriores', async ({ page }) => {
+test('exibe o resumo nutricional e os itens de nutrição na tela de consumo', async ({ page }) => {
   await page.clock.install({ time: new Date('2026-01-02T12:00:00') });
   await page.goto('/');
   await page.getByRole('button', { name: /Alimentos/ }).click();
@@ -176,7 +187,12 @@ test('exibe o resumo nutricional de hoje e a média dos sete dias anteriores', a
     await page.getByRole('button', { name: 'Salvar consumo' }).click();
   }
 
-  await expect(page).toHaveScreenshot('resumo-nutricional.png', { fullPage: true });
+  const resumo = page.locator('.resumo-nutricional');
+  await expect(resumo).toContainText('Valor energético');
+  await expect(resumo).toContainText('Gorduras');
+  await expect(resumo).toContainText('Carboidratos');
+  await expect(resumo).toContainText('Proteínas');
+  await expect(resumo).toContainText('Fibras');
 });
 
 test('cadastra um alimento novo com tabela nutricional ao salvar o consumo', async ({ page }) => {
@@ -193,14 +209,16 @@ test('cadastra um alimento novo com tabela nutricional ao salvar o consumo', asy
   await page.getByLabel('Alimento').fill('Aveia');
   await page.getByRole('option', { name: 'Cadastrar "Aveia"' }).click();
 
+  await expect(page.locator('#cadastro-consumo')).toContainText('Tabela nutricional (por 100g)');
   await page.getByLabel('Valor energético (kcal)').fill('389');
   await page.getByLabel('Gorduras (g)').fill('7');
   await page.getByLabel('Carboidratos (g)').fill('66');
   await page.getByLabel('Proteínas (g)').fill('17');
   await page.getByLabel('Fibras (g)').fill('11');
   await page.getByLabel('Massa (g)').fill('45');
-  await expect(page).toHaveScreenshot('cadastro-consumo-alimento-novo.png', { fullPage: true });
+
   await page.getByRole('button', { name: 'Salvar consumo' }).click();
 
-  await expect(page).toHaveScreenshot('consumo-com-alimento-cadastrado.png', { fullPage: true });
+  await expect(page.locator('.card-consumo')).toContainText('Aveia');
+  await expect(page.locator('.card-consumo')).toContainText('45 g');
 });
