@@ -260,6 +260,14 @@ p {
     margin-bottom: 30px;
 }
 
+.form-peso {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    max-width: 480px;
+    margin-bottom: 30px;
+}
+
 .form-row {
     display: flex;
     flex-direction: column;
@@ -452,6 +460,32 @@ p {
     display: flex;
     flex-direction: column;
     gap: 14px;
+}
+
+.lista-pesos {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.card-peso {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    padding: 14px;
+    background-color: #fafafa;
+}
+
+.card-peso time {
+    color: #555;
+}
+
+.card-peso strong {
+    color: #2c3e50;
+    white-space: nowrap;
 }
 
 .card-consumo {

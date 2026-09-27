@@ -5,6 +5,8 @@
   import Consumo from './pages/Consumo.svelte';
   import DetalheAlimento from './pages/DetalheAlimento.svelte';
   import Arquivo from './pages/Arquivo.svelte';
+  import Peso from './pages/Peso.svelte';
+  import CadastroPeso from './pages/CadastroPeso.svelte';
   import { arquivarAlimento, restaurarAlimento } from './db.js';
 
   let paginaAtiva = 'consumo';
@@ -15,6 +17,7 @@
   const paginas = [
     { id: 'consumo', label: 'Consumo', icon: 'local_dining' },
     { id: 'alimentos', label: 'Alimentos', icon: 'restaurant' },
+    { id: 'peso', label: 'Peso', icon: 'monitor_weight' },
     { id: 'arquivo', label: 'Arquivo', icon: 'archive' }
   ];
 
@@ -79,7 +82,7 @@
     <nav class="sidebar-nav">
       {#each paginas as pagina}
         <button
-          class:active={paginaAtiva === pagina.id}
+          class:active={paginaAtiva === pagina.id || (pagina.id === 'peso' && paginaAtiva === 'cadastro-peso')}
           class="nav-btn"
           data-page={pagina.id}
           onclick={() => selecionarPagina(pagina.id)}
@@ -101,6 +104,13 @@
       <CadastroAlimento />
     {:else if paginaAtiva === 'cadastro-consumo'}
       <CadastroConsumo onSalvar={() => (paginaAtiva = 'consumo')} onVoltar={() => (paginaAtiva = 'consumo')} />
+    {:else if paginaAtiva === 'peso'}
+      <Peso onCadastrar={() => (paginaAtiva = 'cadastro-peso')} />
+    {:else if paginaAtiva === 'cadastro-peso'}
+      <CadastroPeso
+        onSalvar={() => (paginaAtiva = 'peso')}
+        onVoltar={() => (paginaAtiva = 'peso')}
+      />
     {:else if paginaAtiva === 'arquivo'}
       <Arquivo onSelecionar={(alimento) => abrirDetalhe(alimento, 'arquivo')} />
     {:else if paginaAtiva === 'detalhe-alimento' && alimentoSelecionado}

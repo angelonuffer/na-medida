@@ -1,7 +1,8 @@
 const DB_NAME = 'na-medida';
-const DB_VERSION = 2;
+const DB_VERSION = 4;
 const STORE_ALIMENTOS = 'alimentos';
 const STORE_CONSUMOS = 'consumos';
+const STORE_PESOS = 'pesos';
 
 function abrirBanco() {
   return new Promise((resolve, reject) => {
@@ -9,11 +10,27 @@ function abrirBanco() {
 
     request.onupgradeneeded = (event) => {
       const db = event.target.result;
+      const tx = event.target.transaction;
       if (!db.objectStoreNames.contains(STORE_ALIMENTOS)) {
         db.createObjectStore(STORE_ALIMENTOS, { keyPath: 'id', autoIncrement: true });
       }
       if (!db.objectStoreNames.contains(STORE_CONSUMOS)) {
         db.createObjectStore(STORE_CONSUMOS, { keyPath: 'id', autoIncrement: true });
+      }
+      if (!db.objectStoreNames.contains(STORE_PESOS)) {
+        const pesos = db.createObjectStore(STORE_PESOS, { keyPath: 'id', autoIncrement: true });
+        if (db.objectStoreNames.contains('biometria')) {
+          const dadosAntigos = tx.objectStore('biometria').openCursor();
+          dadosAntigos.onsuccess = (cursorEvent) => {
+            const cursor = cursorEvent.target.result;
+            if (cursor) {
+              pesos.put(cursor.value);
+              cursor.continue();
+            } else {
+              db.deleteObjectStore('biometria');
+            }
+          };
+        }
       }
     };
 
@@ -62,6 +79,28 @@ export async function listarConsumos() {
     const store = tx.objectStore(STORE_CONSUMOS);
     const request = store.getAll();
     request.onsuccess = () => resolve(request.result.sort((a, b) => b.dataHora.localeCompare(a.dataHora)));
+    request.onerror = () => reject(request.error);
+  });
+}
+
+export async function adicionarPeso(registro) {
+  const db = await abrirBanco();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_PESOS, 'readwrite');
+    const store = tx.objectStore(STORE_PESOS);
+    const request = store.add(registro);
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+export async function listarPesos() {
+  const db = await abrirBanco();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_PESOS, 'readonly');
+    const store = tx.objectStore(STORE_PESOS);
+    const request = store.getAll();
+    request.onsuccess = () => resolve(request.result.sort((a, b) => b.data.localeCompare(a.data)));
     request.onerror = () => reject(request.error);
   });
 }
