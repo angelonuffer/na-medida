@@ -354,6 +354,7 @@ test('cadastra um alimento novo com tabela nutricional ao salvar o consumo', asy
   await page.getByRole('option', { name: 'Cadastrar "Aveia"' }).click();
 
   await expect(page.locator('#cadastro-consumo')).toContainText('Tabela nutricional (por 100g)');
+  await expect(page.getByRole('button', { name: 'Estimar tabela nutricional com IA' })).toBeEnabled();
   await page.getByLabel('Valor energético (kcal)').fill('389');
   await page.getByLabel('Gorduras (g)').fill('7');
   await page.getByLabel('Carboidratos (g)').fill('66');

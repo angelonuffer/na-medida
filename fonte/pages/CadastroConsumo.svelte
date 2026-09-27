@@ -16,6 +16,9 @@
   let modoCadastroAlimento = $state(false);
   let classificando = $state(false);
   let aiClassifier = null;
+  let estimandoNutricionais = $state(false);
+  let etapaEstimativa = $state('');
+  let aiNutrientEstimator = null;
   let tabelaNutricional = $state({
     valorEnergetico: '',
     gorduras: '',
@@ -78,6 +81,73 @@
     }
 
     throw ultimoErro ?? new Error('Não foi possível carregar o classificador de imagem.');
+  }
+
+  async function carregarEstimadorNutricional() {
+    if (aiNutrientEstimator) return aiNutrientEstimator;
+
+    aiNutrientEstimator = await pipeline(
+      'text-generation',
+      'onnx-community/Qwen2.5-0.5B-Instruct',
+      { dtype: 'q4' }
+    );
+    return aiNutrientEstimator;
+  }
+
+  function extrairNumeroEstimado(resultado) {
+    const resposta = resultado?.[0]?.generated_text;
+    const texto = Array.isArray(resposta) ? resposta.at(-1)?.content : resposta;
+    const numero = String(texto ?? '').match(/\d+(?:[.,]\d+)?/);
+    if (!numero) throw new Error('A IA não retornou um valor numérico válido.');
+
+    const valor = Number(numero[0].replace(',', '.'));
+    if (!Number.isFinite(valor)) throw new Error('A IA não retornou um valor numérico válido.');
+    return valor;
+  }
+
+  async function estimarTabelaNutricional() {
+    if (!alimentoBusca.trim() || estimandoNutricionais) return;
+
+    const nutrientes = [
+      { chave: 'valorEnergetico', nome: 'valor energético', unidade: 'kcal' },
+      { chave: 'gorduras', nome: 'gorduras', unidade: 'g' },
+      { chave: 'carboidratos', nome: 'carboidratos', unidade: 'g' },
+      { chave: 'proteinas', nome: 'proteínas', unidade: 'g' },
+      { chave: 'fibras', nome: 'fibras', unidade: 'g' }
+    ];
+
+    estimandoNutricionais = true;
+    erro = '';
+
+    try {
+      etapaEstimativa = 'Carregando modelo de IA...';
+      const estimador = await carregarEstimadorNutricional();
+
+      for (const nutriente of nutrientes) {
+        if (String(tabelaNutricional[nutriente.chave]).trim()) continue;
+
+        etapaEstimativa = `Estimando ${nutriente.nome}...`;
+        const resultado = await estimador([
+          {
+            role: 'system',
+            content: 'Você estima valores nutricionais de alimentos. Responda apenas com um número não negativo, sem unidade nem explicação.'
+          },
+          {
+            role: 'user',
+            content: `Estime ${nutriente.nome} em ${nutriente.unidade} por 100 g para o alimento "${alimentoBusca.trim()}". Responda somente com o número.`
+          }
+        ], { max_new_tokens: 16, do_sample: false });
+
+        tabelaNutricional[nutriente.chave] = String(extrairNumeroEstimado(resultado));
+      }
+    } catch (error) {
+      erro = error instanceof Error
+        ? `Não foi possível estimar a tabela nutricional: ${error.message}`
+        : 'Não foi possível estimar a tabela nutricional.';
+    } finally {
+      estimandoNutricionais = false;
+      etapaEstimativa = '';
+    }
   }
 
   async function identificarAlimentoComIa() {
@@ -312,6 +382,21 @@
       {#if modoCadastroAlimento}
         <fieldset class="tabela-nutricional">
           <legend>Tabela nutricional (por 100g)</legend>
+          <button
+            type="button"
+            class="btn-estimar-nutricao"
+            aria-label={estimandoNutricionais ? 'Estimando tabela nutricional' : 'Estimar tabela nutricional com IA'}
+            title="Estimar valores nutricionais com IA"
+            disabled={estimandoNutricionais || !alimentoBusca.trim()}
+            onclick={estimarTabelaNutricional}
+          >
+            <span class="material-symbols-outlined">{estimandoNutricionais ? 'sync' : 'auto_awesome'}</span>
+            Estimar com IA
+          </button>
+          {#if etapaEstimativa}
+            <small aria-live="polite">{etapaEstimativa}</small>
+          {/if}
+          <small>Valores estimados. Confira antes de salvar.</small>
           <div class="form-row">
             <label for="novo-valor-energetico">Valor energético (kcal)</label>
             <input id="novo-valor-energetico" type="number" min="0" step="0.1" bind:value={tabelaNutricional.valorEnergetico} />
