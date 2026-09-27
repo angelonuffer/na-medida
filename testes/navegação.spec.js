@@ -1,4 +1,5 @@
 const { test, expect } = require('@playwright/test');
+const basePath = process.env.GITHUB_ACTIONS ? '/na-medida' : '';
 
 test('inicia em Consumo e navega para Alimentos', async ({ page }) => {
   await page.goto('/');
@@ -23,11 +24,11 @@ test('abre rotas diretamente e acompanha voltar e avançar', async ({ page }) =>
     ['/peso', '#peso', 'Histórico de peso'],
     ['/arquivo', '#arquivo', 'Arquivo']
   ]) {
-    await page.goto(rota);
+    await page.goto(`${basePath}${rota}`);
     await expect(page.locator(`${seletor} h1`)).toHaveText(titulo);
   }
 
-  await page.goto('/peso');
+  await page.goto(`${basePath}/peso`);
   await expect(page.locator('#peso h1')).toHaveText('Histórico de peso');
 
   await page.getByRole('button', { name: /Arquivo/ }).click();
