@@ -48,12 +48,14 @@
     const inicioChave = formatarDataLocal(inicioSemana);
     const totaisDia = Object.fromEntries(nutrientes.map(({ chave }) => [chave, 0]));
     const totaisSemana = Object.fromEntries(nutrientes.map(({ chave }) => [chave, 0]));
+    const diasComRegistro = new Set();
     const alimentosPorId = new Map(catalogo.map((alimento) => [String(alimento.id), alimento]));
 
     for (const consumo of registros) {
       const dataConsumo = consumo.dataHora.slice(0, 10);
       const ehDiaSelecionado = dataConsumo === diaChave;
       if (!ehDiaSelecionado && (dataConsumo < inicioChave || dataConsumo >= diaChave)) continue;
+      if (!ehDiaSelecionado) diasComRegistro.add(dataConsumo);
 
       const alimento = alimentosPorId.get(String(consumo.alimentoId));
       if (!alimento) continue;
@@ -68,7 +70,7 @@
     return nutrientes.map((nutriente) => ({
       ...nutriente,
       dia: totaisDia[nutriente.chave],
-      media: totaisSemana[nutriente.chave] / 7
+      media: diasComRegistro.size ? totaisSemana[nutriente.chave] / diasComRegistro.size : 0
     }));
   }
 

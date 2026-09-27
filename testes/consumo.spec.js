@@ -170,7 +170,7 @@ test('exibe um consumo após o cadastro e persiste a imagem no IndexedDB', async
   expect(imagemSalva).toEqual({ nome: 'foto.png', tipo: 'image/png' });
 });
 
-test('exibe o resumo nutricional e os itens de nutrição na tela de consumo', async ({ page }) => {
+test('calcula a média dos dias com registros na tela de consumo', async ({ page }) => {
   await page.clock.install({ time: new Date('2026-01-02T12:00:00') });
   await page.goto('/');
   await prepararBanco(page, [
@@ -181,7 +181,9 @@ test('exibe o resumo nutricional e os itens de nutrição na tela de consumo', a
     }
   ], [
     { dataHora: '2026-01-02T12:00', alimentoId: 1, alimentoNome: 'Alimento do resumo', massa: 100 },
-    { dataHora: '2026-01-01T12:00', alimentoId: 1, alimentoNome: 'Alimento do resumo', massa: 700 }
+    { dataHora: '2026-01-01T12:00', alimentoId: 1, alimentoNome: 'Alimento do resumo', massa: 700 },
+    { dataHora: '2026-01-01T13:00', alimentoId: 1, alimentoNome: 'Alimento do resumo', massa: 300 },
+    { dataHora: '2025-12-29T12:00', alimentoId: 1, alimentoNome: 'Alimento do resumo', massa: 200 }
   ]);
   await page.reload();
 
@@ -191,6 +193,12 @@ test('exibe o resumo nutricional e os itens de nutrição na tela de consumo', a
   await expect(resumo).toContainText('Carboidratos');
   await expect(resumo).toContainText('Proteínas');
   await expect(resumo).toContainText('Fibras');
+  await expect(
+    page.locator('.resumo-nutricional-item')
+      .filter({ hasText: 'Valor energético' })
+      .locator('strong')
+      .nth(1)
+  ).toHaveText('600');
 });
 
 test('cadastra um alimento novo com tabela nutricional ao salvar o consumo', async ({ page }) => {
