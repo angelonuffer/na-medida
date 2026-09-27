@@ -61,6 +61,21 @@ test('filtra os consumos e o resumo pelo dia selecionado', async ({ page }) => {
   await expect(page.locator('.card-consumo')).toContainText('Aveia em flocos');
 });
 
+test('avança e retrocede um dia pelo seletor de consumo', async ({ page }) => {
+  await page.clock.install({ time: new Date('2026-01-31T12:00:00') });
+  await page.goto('/');
+  await page.getByRole('button', { name: /Consumo/ }).click();
+
+  const seletorDia = page.locator('#dia-consumo');
+  await expect(seletorDia).toHaveValue('2026-01-31');
+
+  await page.getByRole('button', { name: 'Próximo dia' }).click();
+  await expect(seletorDia).toHaveValue('2026-02-01');
+
+  await page.getByRole('button', { name: 'Dia anterior' }).click();
+  await expect(seletorDia).toHaveValue('2026-01-31');
+});
+
 test('exibe o formulário de cadastro de Consumo', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('button', { name: /Consumo/ }).click();

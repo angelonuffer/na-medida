@@ -36,6 +36,13 @@
     return `${ano}-${mes}-${dia}`;
   }
 
+  function alterarDia(quantidade) {
+    const [ano, mes, dia] = (diaSelecionado || formatarDataLocal(new Date())).split('-').map(Number);
+    const novaData = new Date(ano, mes - 1, dia);
+    novaData.setDate(novaData.getDate() + quantidade);
+    diaSelecionado = formatarDataLocal(novaData);
+  }
+
   function calcularResumo(registros, catalogo, dataSelecionada) {
     if (!dataSelecionada) {
       return nutrientes.map((nutriente) => ({ ...nutriente, dia: 0, media: 0 }));
@@ -93,7 +100,15 @@
   <p>Aqui você pode gerenciar e planejar seu consumo.</p>
   <div class="seletor-dia">
     <label for="dia-consumo">Dia</label>
-    <input id="dia-consumo" type="date" bind:value={diaSelecionado} />
+    <div class="navegacao-dia">
+      <button type="button" aria-label="Dia anterior" title="Dia anterior" onclick={() => alterarDia(-1)}>
+        <span class="material-symbols-outlined">arrow_back</span>
+      </button>
+      <input id="dia-consumo" type="date" bind:value={diaSelecionado} />
+      <button type="button" aria-label="Próximo dia" title="Próximo dia" onclick={() => alterarDia(1)}>
+        <span class="material-symbols-outlined">arrow_forward</span>
+      </button>
+    </div>
   </div>
   <div class="resumo-nutricional" aria-label="Resumo nutricional">
     {#each resumo as item (item.chave)}

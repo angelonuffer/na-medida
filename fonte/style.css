@@ -202,6 +202,35 @@ p {
     font: inherit;
 }
 
+.navegacao-dia {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.navegacao-dia input {
+    min-width: 0;
+    flex: 1;
+}
+
+.navegacao-dia button {
+    display: grid;
+    place-items: center;
+    flex: 0 0 42px;
+    width: 42px;
+    height: 42px;
+    padding: 0;
+    border: 1px solid #dce1e6;
+    border-radius: 6px;
+    color: #2c3e50;
+    background: #fff;
+    cursor: pointer;
+}
+
+.navegacao-dia button:hover {
+    background: #f4f6f8;
+}
+
 .resumo-nutricional {
     margin-bottom: 20px;
     border-top: 1px solid #eee;
