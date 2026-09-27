@@ -241,13 +241,30 @@ p {
     grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
     align-items: center;
     gap: 16px;
+    width: 100%;
     padding: 12px 0;
+    border: 0;
     border-bottom: 1px solid #eee;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
 }
 
 .resumo-nutricional-item h2 {
     color: #2c3e50;
     font-size: 15px;
+}
+
+.resumo-nutricional-item:hover,
+.resumo-nutricional-item.selecionado {
+    background: #eef6fc;
+}
+
+.resumo-nutricional-item:focus-visible {
+    outline: 2px solid #247ba0;
+    outline-offset: -2px;
 }
 
 .resumo-nutricional-valores {
@@ -270,6 +287,39 @@ p {
 
 .resumo-nutricional-valores strong {
     white-space: nowrap;
+}
+
+.grupo-consumo {
+    padding: 14px 0;
+    border-bottom: 1px solid #dce1e6;
+}
+
+.grupo-consumo header,
+.grupo-consumo li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.grupo-consumo h2 {
+    color: #2c3e50;
+    font-size: 16px;
+}
+
+.grupo-consumo header strong {
+    white-space: nowrap;
+}
+
+.grupo-consumo ul {
+    margin-top: 8px;
+    list-style: none;
+}
+
+.grupo-consumo li {
+    padding: 5px 0;
+    color: #667085;
+    font-size: 14px;
 }
 
 /* Formulário de cadastro de alimento */

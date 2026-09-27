@@ -6,6 +6,7 @@
   let consumos = $state([]);
   let alimentos = $state([]);
   let diaSelecionado = $state(formatarDataLocal(new Date()));
+  let nutrienteSelecionado = $state(null);
 
   const nutrientes = [
     { chave: 'valorEnergetico', nome: 'Valor energético', unidade: 'kcal' },
@@ -18,6 +19,34 @@
 
   let resumo = $derived(calcularResumo(consumos, alimentos, diaSelecionado));
   let consumosDoDia = $derived(consumos.filter((consumo) => consumo.dataHora.slice(0, 10) === diaSelecionado));
+  let gruposConsumos = $derived.by(() => {
+    if (!nutrienteSelecionado) return [];
+
+    const alimentosPorId = new Map(alimentos.map((alimento) => [String(alimento.id), alimento]));
+    const grupos = new Map();
+    for (const consumo of consumosDoDia) {
+      const alimento = alimentosPorId.get(String(consumo.alimentoId));
+      const chaveGrupo = String(consumo.alimentoId ?? consumo.alimentoNome);
+      const grupo = grupos.get(chaveGrupo) ?? {
+        nome: consumo.alimentoNome,
+        total: 0,
+        registros: []
+      };
+      const massa = Number(consumo.massa) || 0;
+      grupo.total += nutrienteSelecionado.chave === 'massa'
+        ? massa
+        : (Number(alimento?.tabelaNutricional?.[nutrienteSelecionado.chave]) || 0) * massa / 100;
+      grupo.registros.push(consumo);
+      grupos.set(chaveGrupo, grupo);
+    }
+
+    return [...grupos.values()]
+      .map((grupo) => ({
+        ...grupo,
+        registros: grupo.registros.sort((a, b) => b.dataHora.localeCompare(a.dataHora))
+      }))
+      .sort((a, b) => b.total - a.total || a.nome.localeCompare(b.nome, 'pt-BR'));
+  });
 
   onMount(async () => {
     const [consumosCarregados, alimentosAtivos, alimentosArquivados] = await Promise.all([
@@ -88,6 +117,10 @@
     return new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 1 }).format(valor);
   }
 
+  function selecionarNutriente(nutriente) {
+    nutrienteSelecionado = nutrienteSelecionado?.chave === nutriente.chave ? null : nutriente;
+  }
+
   function formatarDataHora(dataHora) {
     const [data, hora] = dataHora.split('T');
     const [ano, mes, dia] = data.split('-');
@@ -112,7 +145,14 @@
   </div>
   <div class="resumo-nutricional" aria-label="Resumo nutricional">
     {#each resumo as item (item.chave)}
-      <article class="resumo-nutricional-item">
+      <button
+        type="button"
+        class="resumo-nutricional-item"
+        class:selecionado={nutrienteSelecionado?.chave === item.chave}
+        aria-label={`Agrupar por ${item.nome} (${item.unidade})`}
+        aria-pressed={nutrienteSelecionado?.chave === item.chave}
+        onclick={() => selecionarNutriente(item)}
+      >
         <h2>{item.nome} ({item.unidade})</h2>
         <div class="resumo-nutricional-valores">
           <p>
@@ -124,7 +164,7 @@
             <strong>{formatarValor(item.media)}</strong>
           </p>
         </div>
-      </article>
+      </button>
     {/each}
   </div>
   <button class="btn-cadastrar" aria-label="Cadastrar consumo" onclick={onCadastrar}>
@@ -133,6 +173,25 @@
   </button>
   {#if consumosDoDia.length === 0}
     <div class="content-placeholder"></div>
+  {:else if nutrienteSelecionado}
+    <div class="lista-consumos agrupada-por-nutriente">
+      {#each gruposConsumos as grupo (grupo.nome)}
+        <article class="grupo-consumo">
+          <header>
+            <h2>{grupo.nome}</h2>
+            <strong>{formatarValor(grupo.total)} {nutrienteSelecionado.unidade}</strong>
+          </header>
+          <ul>
+            {#each grupo.registros as consumo (consumo.id)}
+              <li>
+                <time datetime={consumo.dataHora}>{consumo.dataHora.split('T')[1]}</time>
+                <span>{formatarValor(Number(consumo.massa) || 0)} g</span>
+              </li>
+            {/each}
+          </ul>
+        </article>
+      {/each}
+    </div>
   {:else}
     <div class="lista-consumos">
       {#each consumosDoDia as consumo (consumo.id)}

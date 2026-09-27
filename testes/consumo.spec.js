@@ -234,6 +234,34 @@ test('calcula a média dos dias com registros na tela de consumo', async ({ page
   ).toHaveText('600');
 });
 
+test('agrupa e ordena consumos pelo nutriente selecionado', async ({ page }) => {
+  await page.clock.install({ time: new Date('2026-01-02T12:00:00') });
+  await page.goto('/');
+  await prepararBanco(page, [
+    { id: 1, nome: 'Aveia', tabelaNutricional: { valorEnergetico: 100 } },
+    { id: 2, nome: 'Castanhas', tabelaNutricional: { valorEnergetico: 300 } }
+  ], [
+    { id: 1, dataHora: '2026-01-02T09:00', alimentoId: 1, alimentoNome: 'Aveia', massa: 100 },
+    { id: 2, dataHora: '2026-01-02T10:00', alimentoId: 2, alimentoNome: 'Castanhas', massa: 100 },
+    { id: 3, dataHora: '2026-01-02T11:00', alimentoId: 1, alimentoNome: 'Aveia', massa: 200 }
+  ]);
+  await page.reload();
+
+  await page.getByRole('button', { name: 'Agrupar por Valor energético (kcal)' }).click();
+
+  const grupos = page.locator('.grupo-consumo');
+  await expect(grupos).toHaveCount(2);
+  await expect(grupos.nth(0)).toContainText('Aveia');
+  await expect(grupos.nth(0)).toContainText('300 kcal');
+  await expect(grupos.nth(0).locator('li')).toHaveCount(2);
+  await expect(grupos.nth(1)).toContainText('Castanhas');
+  await expect(grupos.nth(1)).toContainText('300 kcal');
+
+  await page.getByRole('button', { name: 'Agrupar por Valor energético (kcal)' }).click();
+  await expect(page.locator('.grupo-consumo')).toHaveCount(0);
+  await expect(page.locator('.card-consumo')).toHaveCount(3);
+});
+
 test('cadastra um alimento novo com tabela nutricional ao salvar o consumo', async ({ page }) => {
   await page.clock.install({ time: new Date('2026-01-02T12:00:00') });
   await page.goto('/');
