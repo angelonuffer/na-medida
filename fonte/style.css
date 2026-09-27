@@ -382,12 +382,87 @@ p {
     margin-bottom: 30px;
 }
 
-.form-peso {
+.form-medidas {
     display: flex;
     flex-direction: column;
     gap: 16px;
     max-width: 480px;
     margin-bottom: 30px;
+}
+
+.form-row input[readonly] {
+    background-color: #f4f6f8;
+    color: #555;
+}
+
+.faixa-imc {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: -8px;
+}
+
+.faixa-imc-barra,
+.faixa-imc-legenda {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 3px;
+}
+
+.faixa-imc-item {
+    height: 10px;
+    opacity: 0.38;
+    transition: opacity 160ms ease, transform 160ms ease;
+}
+
+.faixa-imc-item:first-child,
+.faixa-imc-item:last-child {
+    border-radius: 5px;
+}
+
+.faixa-imc-item.ativa {
+    opacity: 1;
+    transform: scaleY(1.35);
+}
+
+.faixa-imc-baixo { background: #4d90c6; }
+.faixa-imc-adequado { background: #4c9b68; }
+.faixa-imc-sobrepeso { background: #dfb43e; }
+.faixa-imc-obesidade-1 { background: #e58b3e; }
+.faixa-imc-obesidade-2 { background: #d85b48; }
+.faixa-imc-obesidade-3 { background: #9f3e50; }
+
+.faixa-imc-legenda-item {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 2px;
+    color: #68727c;
+    font-size: 10px;
+    line-height: 1.2;
+}
+
+.faixa-imc-legenda-item.ativa {
+    color: #263746;
+    font-weight: 700;
+}
+
+.faixa-imc-legenda-item small {
+    font-size: 9px;
+}
+
+.faixa-imc-status {
+    margin: 0;
+    color: #43515d;
+    font-size: 12px;
+}
+
+@media (max-width: 480px) {
+    .faixa-imc-barra,
+    .faixa-imc-legenda {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        row-gap: 6px;
+    }
 }
 
 .form-row {
@@ -584,13 +659,13 @@ p {
     gap: 14px;
 }
 
-.lista-pesos {
+.lista-medidas {
     display: flex;
     flex-direction: column;
     gap: 10px;
 }
 
-.card-peso {
+.card-medida {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -601,11 +676,19 @@ p {
     background-color: #fafafa;
 }
 
-.card-peso time {
+.card-medida time {
     color: #555;
 }
 
-.card-peso strong {
+.valores-medida {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px 16px;
+    text-align: right;
+}
+
+.card-medida strong {
     color: #2c3e50;
     white-space: nowrap;
 }

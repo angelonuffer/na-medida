@@ -21,25 +21,31 @@ test('abre rotas diretamente e acompanha voltar e avançar', async ({ page }) =>
   for (const [rota, seletor, titulo] of [
     ['/consumo', '#consumo', 'Consumo'],
     ['/alimentos', '#alimentos', 'Alimentos'],
-    ['/peso', '#peso', 'Histórico de peso'],
+    ['/medidas', '#medidas', 'Histórico de medidas'],
     ['/arquivo', '#arquivo', 'Arquivo']
   ]) {
     await page.goto(`${basePath}${rota}`);
     await expect(page.locator(`${seletor} h1`)).toHaveText(titulo);
   }
 
-  await page.goto(`${basePath}/peso`);
-  await expect(page.locator('#peso h1')).toHaveText('Histórico de peso');
+  await page.goto(`${basePath}/medidas`);
+  await expect(page.locator('#medidas h1')).toHaveText('Histórico de medidas');
 
   await page.getByRole('button', { name: /Arquivo/ }).click();
   await expect(page).toHaveURL(/\/arquivo$/);
   await expect(page.locator('#arquivo h1')).toHaveText('Arquivo');
 
   await page.goBack();
-  await expect(page).toHaveURL(/\/peso$/);
-  await expect(page.locator('#peso h1')).toHaveText('Histórico de peso');
+  await expect(page).toHaveURL(/\/medidas$/);
+  await expect(page.locator('#medidas h1')).toHaveText('Histórico de medidas');
 
   await page.goForward();
   await expect(page).toHaveURL(/\/arquivo$/);
   await expect(page.locator('#arquivo h1')).toHaveText('Arquivo');
+});
+
+test('mantém a rota antiga de peso compatível', async ({ page }) => {
+  await page.goto(`${basePath}/peso`);
+  await expect(page.locator('#medidas h1')).toHaveText('Histórico de medidas');
+  await expect(page.getByRole('button', { name: /Medidas/ })).toHaveClass(/active/);
 });

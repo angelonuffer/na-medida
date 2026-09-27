@@ -6,8 +6,8 @@
   import Consumo from './pages/Consumo.svelte';
   import DetalheAlimento from './pages/DetalheAlimento.svelte';
   import Arquivo from './pages/Arquivo.svelte';
-  import Peso from './pages/Peso.svelte';
-  import CadastroPeso from './pages/CadastroPeso.svelte';
+  import Medidas from './pages/Medidas.svelte';
+  import CadastroMedidas from './pages/CadastroMedidas.svelte';
   import { arquivarAlimento, restaurarAlimento } from './db.js';
 
   let paginaAtiva = 'consumo';
@@ -18,7 +18,7 @@
   const paginas = [
     { id: 'consumo', label: 'Consumo', icon: 'local_dining' },
     { id: 'alimentos', label: 'Alimentos', icon: 'restaurant' },
-    { id: 'peso', label: 'Peso', icon: 'monitor_weight' },
+    { id: 'medidas', label: 'Medidas', icon: 'straighten' },
     { id: 'arquivo', label: 'Arquivo', icon: 'archive' }
   ];
 
@@ -31,7 +31,8 @@
     }
 
     caminho = caminho.replace(/\/+$/, '') || '/';
-    return paginas.find((pagina) => caminho === `/${pagina.id}`)?.id ?? null;
+    return paginas.find((pagina) => caminho === `/${pagina.id}`)?.id
+      ?? (caminho === '/peso' ? 'medidas' : null);
   }
 
   function atualizarUrl(id, substituir = false) {
@@ -125,7 +126,7 @@
     <nav class="sidebar-nav">
       {#each paginas as pagina}
         <button
-          class:active={paginaAtiva === pagina.id || (pagina.id === 'peso' && paginaAtiva === 'cadastro-peso')}
+          class:active={paginaAtiva === pagina.id || (pagina.id === 'medidas' && paginaAtiva === 'cadastro-medidas')}
           class="nav-btn"
           data-page={pagina.id}
           onclick={() => selecionarPagina(pagina.id)}
@@ -147,12 +148,12 @@
       <CadastroAlimento />
     {:else if paginaAtiva === 'cadastro-consumo'}
       <CadastroConsumo onSalvar={() => (paginaAtiva = 'consumo')} onVoltar={() => (paginaAtiva = 'consumo')} />
-    {:else if paginaAtiva === 'peso'}
-      <Peso onCadastrar={() => (paginaAtiva = 'cadastro-peso')} />
-    {:else if paginaAtiva === 'cadastro-peso'}
-      <CadastroPeso
-        onSalvar={() => (paginaAtiva = 'peso')}
-        onVoltar={() => (paginaAtiva = 'peso')}
+    {:else if paginaAtiva === 'medidas'}
+      <Medidas onCadastrar={() => (paginaAtiva = 'cadastro-medidas')} />
+    {:else if paginaAtiva === 'cadastro-medidas'}
+      <CadastroMedidas
+        onSalvar={() => (paginaAtiva = 'medidas')}
+        onVoltar={() => (paginaAtiva = 'medidas')}
       />
     {:else if paginaAtiva === 'arquivo'}
       <Arquivo onSelecionar={(alimento) => abrirDetalhe(alimento, 'arquivo')} />
