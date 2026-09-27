@@ -12,7 +12,8 @@
     { chave: 'gorduras', nome: 'Gorduras', unidade: 'g' },
     { chave: 'carboidratos', nome: 'Carboidratos', unidade: 'g' },
     { chave: 'proteinas', nome: 'Proteínas', unidade: 'g' },
-    { chave: 'fibras', nome: 'Fibras', unidade: 'g' }
+    { chave: 'fibras', nome: 'Fibras', unidade: 'g' },
+    { chave: 'massa', nome: 'Massa', unidade: 'g' }
   ];
 
   let resumo = $derived(calcularResumo(consumos, alimentos, diaSelecionado));
@@ -63,7 +64,9 @@
       const fatorMassa = (Number(consumo.massa) || 0) / 100;
       const totais = ehDiaSelecionado ? totaisDia : totaisSemana;
       for (const { chave } of nutrientes) {
-        totais[chave] += (Number(alimento.tabelaNutricional?.[chave]) || 0) * fatorMassa;
+        totais[chave] += chave === 'massa'
+          ? Number(consumo.massa) || 0
+          : (Number(alimento.tabelaNutricional?.[chave]) || 0) * fatorMassa;
       }
     }
 

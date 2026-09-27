@@ -193,6 +193,19 @@ test('calcula a média dos dias com registros na tela de consumo', async ({ page
   await expect(resumo).toContainText('Carboidratos');
   await expect(resumo).toContainText('Proteínas');
   await expect(resumo).toContainText('Fibras');
+  await expect(resumo.locator('.resumo-nutricional-item').last()).toContainText('Massa (g)');
+  await expect(
+    resumo.locator('.resumo-nutricional-item')
+      .filter({ hasText: 'Massa (g)' })
+      .locator('strong')
+      .first()
+  ).toHaveText('100');
+  await expect(
+    resumo.locator('.resumo-nutricional-item')
+      .filter({ hasText: 'Massa (g)' })
+      .locator('strong')
+      .nth(1)
+  ).toHaveText('600');
   await expect(
     page.locator('.resumo-nutricional-item')
       .filter({ hasText: 'Valor energético' })
