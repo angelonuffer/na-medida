@@ -1,4 +1,5 @@
 <script>
+  import { onMount } from 'svelte';
   import Alimentos from './pages/Alimentos.svelte';
   import CadastroAlimento from './pages/CadastroAlimento.svelte';
   import CadastroConsumo from './pages/CadastroConsumo.svelte';
@@ -20,6 +21,47 @@
     { id: 'peso', label: 'Peso', icon: 'monitor_weight' },
     { id: 'arquivo', label: 'Arquivo', icon: 'archive' }
   ];
+
+  function paginaDaUrl() {
+    let caminho = window.location.pathname;
+    const base = import.meta.env.BASE_URL;
+
+    if (base !== '/' && caminho.startsWith(base)) {
+      caminho = `/${caminho.slice(base.length)}`;
+    }
+
+    caminho = caminho.replace(/\/+$/, '') || '/';
+    return paginas.find((pagina) => caminho === `/${pagina.id}`)?.id ?? null;
+  }
+
+  function atualizarUrl(id, substituir = false) {
+    const url = `${import.meta.env.BASE_URL}${id}`;
+    if (window.location.pathname === url) return;
+
+    if (substituir) {
+      window.history.replaceState(null, '', url);
+    } else {
+      window.history.pushState(null, '', url);
+    }
+  }
+
+  onMount(() => {
+    const rotaInicial = paginaDaUrl();
+    if (rotaInicial) {
+      paginaAtiva = rotaInicial;
+    } else {
+      paginaAtiva = 'consumo';
+      atualizarUrl('consumo', true);
+    }
+
+    const aoNavegarHistorico = () => {
+      paginaAtiva = paginaDaUrl() ?? 'consumo';
+      alimentoSelecionado = null;
+    };
+
+    window.addEventListener('popstate', aoNavegarHistorico);
+    return () => window.removeEventListener('popstate', aoNavegarHistorico);
+  });
 
   function abrirDetalhe(alimento, paginaOrigem = 'alimentos') {
     alimentoSelecionado = alimento;
@@ -54,6 +96,7 @@
 
   function selecionarPagina(id) {
     paginaAtiva = id;
+    atualizarUrl(id);
     fecharMenu();
   }
 </script>
