@@ -279,6 +279,12 @@ p {
     border-top: 1px solid #eee;
 }
 
+.origem-faixa-recomendada {
+    margin: 10px 0 0;
+    color: #667085;
+    font-size: 12px;
+}
+
 .resumo-nutricional-item {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
@@ -329,6 +335,51 @@ p {
 }
 
 .resumo-nutricional-valores strong {
+    white-space: nowrap;
+}
+
+.indicador-recomendacao {
+    width: 100%;
+    margin-top: 8px;
+}
+
+.barra-recomendacao {
+    position: relative;
+    height: 12px;
+    overflow: hidden;
+    border-radius: 6px;
+    background: #e9edf0;
+}
+
+.barra-recomendacao-preenchida {
+    position: absolute;
+    inset: 0 auto 0 0;
+    border-radius: inherit;
+    background: #247ba0;
+}
+
+.marco-recomendacao {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #263746;
+}
+
+.marco-minimo {
+    background: #fff;
+}
+
+.legenda-recomendacao {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: 4px;
+    color: #59636d;
+    font-size: 11px;
+}
+
+.legenda-recomendacao span {
     white-space: nowrap;
 }
 

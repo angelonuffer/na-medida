@@ -1,4 +1,6 @@
 <script>
+  import { calcularRecomendacoes } from '../recomendacoes.js';
+
   let { medida, onVoltar, onEditar } = $props();
 
   function formatarData(data) {
@@ -12,26 +14,6 @@
 
   function formatarDataHora(dataHora) {
     return new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(dataHora));
-  }
-
-  function calcularRecomendacoes(pesoInformado, alturaInformada) {
-    const peso = Number(pesoInformado);
-    const altura = Number(alturaInformada);
-
-    if (!peso || !altura) return [];
-
-    const alturaMetros = altura / 100;
-    const imc = peso / (alturaMetros * alturaMetros);
-    const energiaMin = Math.round(peso * (imc < 25 ? 25 : imc < 30 ? 27 : 23));
-    const energiaMax = Math.round(peso * (imc < 25 ? 32 : imc < 30 ? 34 : 30));
-
-    return [
-      { nome: 'Valor energético', unidade: 'kcal', minimo: energiaMin, maximo: energiaMax },
-      { nome: 'Gorduras', unidade: 'g', minimo: Number((peso * 0.6).toFixed(1)), maximo: Number((peso * 0.9).toFixed(1)) },
-      { nome: 'Carboidratos', unidade: 'g', minimo: Number((peso * 2.5).toFixed(1)), maximo: Number((peso * 4).toFixed(1)) },
-      { nome: 'Proteínas', unidade: 'g', minimo: Number((peso * 1.2).toFixed(1)), maximo: Number((peso * 1.8).toFixed(1)) },
-      { nome: 'Fibras', unidade: 'g', minimo: Number(Math.max(14, peso * 0.2).toFixed(1)), maximo: Number(Math.max(22, peso * 0.3).toFixed(1)) }
-    ];
   }
 
   const recomendacoes = $derived.by(() => calcularRecomendacoes(medida?.peso, medida?.alturaCm));

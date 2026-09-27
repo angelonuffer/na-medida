@@ -1,10 +1,12 @@
 <script>
   import { onMount } from 'svelte';
-  import { listarAlimentos, listarConsumos } from '../db.js';
+  import { listarAlimentos, listarConsumos, listarMedidas } from '../db.js';
+  import { calcularRecomendacoes, calcularRecomendacoesMedias } from '../recomendacoes.js';
 
   let { onCadastrar } = $props();
   let consumos = $state([]);
   let alimentos = $state([]);
+  let medidas = $state([]);
   let diaSelecionado = $state(formatarDataLocal(new Date()));
   let periodoSelecionado = $state('dia');
   let nutrienteSelecionado = $state(null);
@@ -22,6 +24,15 @@
     ...item,
     valor: periodoSelecionado === 'dia' ? item.dia : item.media
   })));
+  let faixaRecomendada = $derived.by(() => {
+    const medidaRecente = medidas
+      .filter((medida) => medida.data <= diaSelecionado)
+      .sort((a, b) => b.data.localeCompare(a.data) || Number(b.id) - Number(a.id))[0];
+    return medidaRecente
+      ? { itens: calcularRecomendacoes(medidaRecente.peso, medidaRecente.alturaCm), data: medidaRecente.data }
+      : { itens: calcularRecomendacoesMedias(medidas), data: null };
+  });
+  let recomendacoesPorChave = $derived(new Map(faixaRecomendada.itens.map((item) => [item.chave, item])));
   let consumosDoDia = $derived(consumos.filter((consumo) => consumo.dataHora.slice(0, 10) === diaSelecionado));
   let consumosDaSemana = $derived.by(() => {
     if (!diaSelecionado) return [];
@@ -65,13 +76,15 @@
   });
 
   onMount(async () => {
-    const [consumosCarregados, alimentosAtivos, alimentosArquivados] = await Promise.all([
+    const [consumosCarregados, alimentosAtivos, alimentosArquivados, medidasCarregadas] = await Promise.all([
       listarConsumos(),
       listarAlimentos(),
-      listarAlimentos({ arquivados: true })
+      listarAlimentos({ arquivados: true }),
+      listarMedidas()
     ]);
     consumos = consumosCarregados;
     alimentos = [...alimentosAtivos, ...alimentosArquivados];
+    medidas = medidasCarregadas;
   });
 
   function formatarDataLocal(data) {
@@ -133,6 +146,16 @@
     return new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 1 }).format(valor);
   }
 
+  function formatarData(data) {
+    const [ano, mes, dia] = data.split('-');
+    return `${dia}/${mes}/${ano}`;
+  }
+
+  function larguraBarra(valor, maximoRecomendado) {
+    if (!maximoRecomendado) return 0;
+    return Math.min(100, Math.max(0, valor / (maximoRecomendado * 1.1) * 100));
+  }
+
   function selecionarNutriente(nutriente) {
     nutrienteSelecionado = nutrienteSelecionado?.chave === nutriente.chave ? null : nutriente;
   }
@@ -187,6 +210,11 @@
     </div>
   </div>
   <div class="resumo-nutricional" aria-label="Resumo nutricional">
+    <p class="origem-faixa-recomendada">
+      {faixaRecomendada.data
+        ? `Faixa recomendada baseada na medida de ${formatarData(faixaRecomendada.data)}`
+        : 'Faixa média recomendada (sem medida anterior ao dia selecionado)'}
+    </p>
     {#each resumo as item (item.chave)}
       <button
         type="button"
@@ -201,6 +229,29 @@
           <p>
             <strong>{formatarValor(item.valor)}</strong>
           </p>
+          {#if recomendacoesPorChave.has(item.chave)}
+            {@const recomendacao = recomendacoesPorChave.get(item.chave)}
+            {@const escala = recomendacao.maximo * 1.1}
+            <div class="indicador-recomendacao">
+              <div
+                class="barra-recomendacao"
+                role="progressbar"
+                aria-label={`${item.nome}: ${formatarValor(item.valor)} ${item.unidade}; recomendado de ${formatarValor(recomendacao.minimo)} a ${formatarValor(recomendacao.maximo)} ${item.unidade}`}
+                aria-valuemin="0"
+                aria-valuemax={escala}
+                aria-valuenow={Math.min(item.valor, escala)}
+                aria-valuetext={`${formatarValor(item.valor)} ${item.unidade}`}
+              >
+                <span class="barra-recomendacao-preenchida" style={`width: ${larguraBarra(item.valor, recomendacao.maximo)}%`}></span>
+                <span class="marco-recomendacao marco-minimo" style={`left: ${larguraBarra(recomendacao.minimo, recomendacao.maximo)}%`}></span>
+                <span class="marco-recomendacao marco-maximo" style={`left: ${larguraBarra(recomendacao.maximo, recomendacao.maximo)}%`}></span>
+              </div>
+              <div class="legenda-recomendacao">
+                <span>Mín. {formatarValor(recomendacao.minimo)} {item.unidade}</span>
+                <span>Máx. {formatarValor(recomendacao.maximo)} {item.unidade}</span>
+              </div>
+            </div>
+          {/if}
         </div>
       </button>
     {/each}

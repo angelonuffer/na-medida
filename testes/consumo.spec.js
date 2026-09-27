@@ -1,22 +1,23 @@
 const { test, expect } = require('@playwright/test');
 
-async function prepararBanco(page, alimentos, consumos = []) {
-  await page.evaluate(async ({ alimentos, consumos }) => {
+async function prepararBanco(page, alimentos, consumos = [], medidas = []) {
+  await page.evaluate(async ({ alimentos, consumos, medidas }) => {
     const db = await new Promise((resolve, reject) => {
       const request = indexedDB.open('na-medida');
       request.onsuccess = () => resolve(request.result);
       request.onerror = () => reject(request.error);
     });
-    const tx = db.transaction(['alimentos', 'consumos'], 'readwrite');
+    const tx = db.transaction(['alimentos', 'consumos', 'medidas'], 'readwrite');
     for (const alimento of alimentos) tx.objectStore('alimentos').add(alimento);
     for (const consumo of consumos) tx.objectStore('consumos').add(consumo);
+    for (const medida of medidas) tx.objectStore('medidas').add(medida);
     await new Promise((resolve, reject) => {
       tx.oncomplete = resolve;
       tx.onerror = () => reject(tx.error);
       tx.onabort = () => reject(tx.error);
     });
     db.close();
-  }, { alimentos, consumos });
+  }, { alimentos, consumos, medidas });
 }
 
 test('exibe a página de Consumo com os elementos básicos', async ({ page }) => {
@@ -59,6 +60,61 @@ test('filtra os consumos e o resumo pelo dia selecionado', async ({ page }) => {
   await seletorDia.fill('2026-01-02');
   await page.locator('.card-consumo').waitFor({ state: 'visible' });
   await expect(page.locator('.card-consumo')).toContainText('Aveia em flocos');
+});
+
+test('usa a medida do dia ou a mais recente anterior e limita a barra a 110% do máximo', async ({ page }) => {
+  await page.clock.install({ time: new Date('2026-01-02T12:00:00') });
+  await page.goto('/');
+  await prepararBanco(page, [
+    { id: 1, nome: 'Alimento', tabelaNutricional: { valorEnergetico: 2500 } }
+  ], [
+    { id: 1, dataHora: '2026-01-02T12:00', alimentoId: 1, alimentoNome: 'Alimento', massa: 100 }
+  ], [
+    { id: 1, data: '2026-01-01', peso: 80, alturaCm: 170 },
+    { id: 2, data: '2026-01-02', peso: 60, alturaCm: 170 },
+    { id: 3, data: '2026-01-03', peso: 100, alturaCm: 170 }
+  ]);
+  await page.reload();
+
+  const faixaEnergia = page.locator('.resumo-nutricional-item').filter({ hasText: 'Valor energético' });
+  await expect(page.locator('.origem-faixa-recomendada')).toContainText('02/01/2026');
+  await expect(faixaEnergia).toContainText('Mín. 1.500 kcal');
+  await expect(faixaEnergia).toContainText('Máx. 1.920 kcal');
+  await expect(faixaEnergia.getByRole('progressbar')).toHaveAttribute('aria-valuemax', '2112');
+  await expect(faixaEnergia.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '2112');
+  await expect(faixaEnergia.locator('.barra-recomendacao-preenchida')).toHaveAttribute('style', 'width: 100%;');
+
+  await page.locator('#dia-consumo').fill('2026-01-04');
+  await expect(page.locator('.origem-faixa-recomendada')).toContainText('03/01/2026');
+  await expect(faixaEnergia).toContainText('Mín. 2.300 kcal');
+  await expect(faixaEnergia).toContainText('Máx. 3.000 kcal');
+});
+
+test('usa a faixa média recomendada de referência quando não há medidas', async ({ page }) => {
+  await page.clock.install({ time: new Date('2026-01-02T12:00:00') });
+  await page.goto('/');
+
+  const faixaEnergia = page.locator('.resumo-nutricional-item').filter({ hasText: 'Valor energético' });
+  await expect(page.locator('.origem-faixa-recomendada')).toContainText('Faixa média recomendada');
+  await expect(faixaEnergia).toContainText('Mín. 1.750 kcal');
+  await expect(faixaEnergia).toContainText('Máx. 2.240 kcal');
+  await expect(faixaEnergia.getByRole('progressbar')).toHaveAttribute('aria-valuemax', '2464');
+});
+
+test('calcula a média das faixas quando todas as medidas são posteriores ao dia selecionado', async ({ page }) => {
+  await page.clock.install({ time: new Date('2026-01-02T12:00:00') });
+  await page.goto('/');
+  await prepararBanco(page, [], [], [
+    { id: 1, data: '2026-01-03', peso: 60, alturaCm: 170 },
+    { id: 2, data: '2026-01-04', peso: 80, alturaCm: 170 }
+  ]);
+  await page.reload();
+
+  const faixaEnergia = page.locator('.resumo-nutricional-item').filter({ hasText: 'Valor energético' });
+  await expect(page.locator('.origem-faixa-recomendada')).toContainText('Faixa média recomendada');
+  await expect(faixaEnergia).toContainText('Mín. 1.830 kcal');
+  await expect(faixaEnergia).toContainText('Máx. 2.320 kcal');
+  await expect(faixaEnergia.getByRole('progressbar')).toHaveAttribute('aria-valuemax', '2552');
 });
 
 test('avança e retrocede um dia pelo seletor de consumo', async ({ page }) => {
