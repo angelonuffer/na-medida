@@ -29,6 +29,26 @@ test('exibe a página de Consumo com os elementos básicos', async ({ page }) =>
   await expect(page.getByRole('button', { name: 'Cadastrar consumo' })).toBeVisible();
 });
 
+test('mantém nome e valor na mesma linha e a barra em largura total no mobile', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/');
+
+  const item = page.locator('.resumo-nutricional-item').filter({ hasText: 'Valor energético' });
+  const nome = item.locator('h2');
+  const valor = item.locator('strong');
+  const barra = item.locator('.barra-recomendacao');
+  await expect(barra).toBeVisible();
+  const nomeRect = await nome.boundingBox();
+  const valorRect = await valor.boundingBox();
+  const barraRect = await barra.boundingBox();
+  const itemRect = await item.boundingBox();
+
+  expect(Math.abs(nomeRect.y - valorRect.y)).toBeLessThan(4);
+  expect(valorRect.x).toBeGreaterThan(nomeRect.x + nomeRect.width);
+  expect(barraRect.y).toBeGreaterThan(nomeRect.y + nomeRect.height);
+  expect(barraRect.width).toBeGreaterThan(itemRect.width * 0.9);
+});
+
 test('filtra os consumos e o resumo pelo dia selecionado', async ({ page }) => {
   await page.clock.install({ time: new Date('2026-01-02T12:00:00') });
   await page.goto('/');

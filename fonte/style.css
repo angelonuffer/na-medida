@@ -1048,6 +1048,25 @@ p {
         padding: 20px 16px;
     }
 
+    .resumo-nutricional-item {
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: stretch;
+        gap: 8px;
+    }
+
+    .resumo-nutricional-valores {
+        display: contents;
+    }
+
+    .resumo-nutricional-valores p {
+        justify-content: flex-end;
+    }
+
+    .resumo-nutricional-item .indicador-recomendacao {
+        grid-column: 1 / -1;
+        margin-top: 0;
+    }
+
     h1 {
         font-size: 24px;
     }
