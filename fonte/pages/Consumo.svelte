@@ -124,9 +124,8 @@
         <article class="card-consumo">
           <div>
             <h2>{consumo.alimentoNome}</h2>
-            <p>{formatarDataHora(consumo.dataHora)}</p>
           </div>
-          <strong>{consumo.massa} g</strong>
+          <strong>{consumo.dataHora.split("T")[1]}</strong>
         </article>
       {/each}
     </div>
