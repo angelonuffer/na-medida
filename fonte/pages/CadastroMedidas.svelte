@@ -36,6 +36,32 @@
     return `${ano}-${mes}-${dia}`;
   }
 
+  function formatarNumero(valor, maximoDecimais = 2) {
+    return new Intl.NumberFormat('pt-BR', { maximumFractionDigits: maximoDecimais }).format(Number(valor));
+  }
+
+  function calcularRecomendacoes(pesoInformado, alturaInformada) {
+    const peso = Number(pesoInformado);
+    const altura = Number(alturaInformada);
+
+    if (!peso || !altura) return [];
+
+    const alturaMetros = altura / 100;
+    const imc = peso / (alturaMetros * alturaMetros);
+    const energiaMin = Math.round(peso * (imc < 25 ? 25 : imc < 30 ? 27 : 23));
+    const energiaMax = Math.round(peso * (imc < 25 ? 32 : imc < 30 ? 34 : 30));
+
+    return [
+      { nome: 'Valor energético', unidade: 'kcal', minimo: energiaMin, maximo: energiaMax },
+      { nome: 'Gorduras', unidade: 'g', minimo: Number((peso * 0.6).toFixed(1)), maximo: Number((peso * 0.9).toFixed(1)) },
+      { nome: 'Carboidratos', unidade: 'g', minimo: Number((peso * 2.5).toFixed(1)), maximo: Number((peso * 4).toFixed(1)) },
+      { nome: 'Proteínas', unidade: 'g', minimo: Number((peso * 1.2).toFixed(1)), maximo: Number((peso * 1.8).toFixed(1)) },
+      { nome: 'Fibras', unidade: 'g', minimo: Number(Math.max(14, peso * 0.2).toFixed(1)), maximo: Number(Math.max(22, peso * 0.3).toFixed(1)) }
+    ];
+  }
+
+  let recomendacoes = $derived.by(() => calcularRecomendacoes(peso, alturaCm));
+
   async function salvar(event) {
     event.preventDefault();
     await adicionarMedida({
@@ -98,6 +124,23 @@
         </p>
       {/if}
     </div>
+
+    {#if recomendacoes.length}
+      <section class="recomendacoes-diarias" aria-labelledby="titulo-recomendacoes">
+        <h2 id="titulo-recomendacoes">Faixas diárias recomendadas</h2>
+        <dl class="lista-recomendacoes">
+          {#each recomendacoes as item}
+            <div class="recomendacao-item">
+              <dt>{item.nome}</dt>
+              <dd>
+                <span>Mín. {formatarNumero(item.minimo, item.unidade === 'kcal' ? 0 : 1)} {item.unidade}</span>
+                <span>Máx. {formatarNumero(item.maximo, item.unidade === 'kcal' ? 0 : 1)} {item.unidade}</span>
+              </dd>
+            </div>
+          {/each}
+        </dl>
+      </section>
+    {/if}
 
     <button type="submit" class="btn-salvar">Salvar dados</button>
     <button type="button" class="btn-voltar" onclick={onVoltar}>Voltar às medidas</button>

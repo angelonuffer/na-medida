@@ -17,6 +17,10 @@ test('registra medidas, calcula IMC e exibe o histórico por data decrescente', 
   await expect(campoImc).toHaveValue('25.62');
   await expect(page.getByText('Classificação: Sobrepeso')).toBeVisible();
   await expect(page.locator('.faixa-imc-sobrepeso')).toHaveAttribute('aria-current', 'true');
+  await expect(page.getByRole('heading', { name: 'Faixas diárias recomendadas' })).toBeVisible();
+  await expect(page.locator('.lista-recomendacoes')).toContainText('Valor energético');
+  await expect(page.locator('.lista-recomendacoes')).toContainText('Mín.');
+  await expect(page.locator('.lista-recomendacoes')).toContainText('Máx.');
   await page.getByRole('button', { name: 'Salvar dados' }).click();
 
   await page.getByRole('button', { name: 'Registrar medidas' }).click();
@@ -111,4 +115,6 @@ test('abre a tela de detalhes ao clicar em uma medida', async ({ page }) => {
   await expect(page.locator('#detalhe-medida')).toContainText('72,3 kg');
   await expect(page.locator('#detalhe-medida')).toContainText('1,68 m');
   await expect(page.locator('#detalhe-medida')).toContainText('IMC 25,62');
+  await expect(page.getByRole('heading', { name: 'Faixas diárias recomendadas' })).toBeVisible();
+  await expect(page.locator('.lista-recomendacoes')).toContainText('Proteínas');
 });

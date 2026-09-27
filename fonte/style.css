@@ -457,11 +457,59 @@ p {
     font-size: 12px;
 }
 
+.recomendacoes-diarias {
+    margin-top: 8px;
+}
+
+.lista-recomendacoes {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 0;
+}
+
+.lista-recomendacoes .recomendacao-item {
+    display: grid;
+    grid-template-columns: minmax(120px, 1.3fr) minmax(0, 2fr);
+    gap: 12px;
+    padding: 12px 14px;
+    background: #f5f7fa;
+    border: 1px solid #e2e8ee;
+    border-radius: 10px;
+}
+
+.recomendacao-item dt {
+    font-weight: 700;
+    color: #2d3b46;
+}
+
+.recomendacao-item dd {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px 16px;
+    margin: 0;
+    color: #4d5d6d;
+    font-size: 13px;
+}
+
+.recomendacao-item dd span {
+    white-space: nowrap;
+}
+
 @media (max-width: 480px) {
     .faixa-imc-barra,
     .faixa-imc-legenda {
         grid-template-columns: repeat(3, minmax(0, 1fr));
         row-gap: 6px;
+    }
+
+    .lista-recomendacoes .recomendacao-item {
+        grid-template-columns: 1fr;
+    }
+
+    .recomendacao-item dd {
+        justify-content: flex-start;
     }
 }
 
