@@ -7,6 +7,39 @@ test('exibe a página de Consumo', async ({ page }) => {
   await expect(page).toHaveScreenshot('consumo-inicial.png', { fullPage: true });
 });
 
+test('filtra os consumos e o resumo pelo dia selecionado', async ({ page }) => {
+  await page.clock.install({ time: new Date('2026-01-02T12:00:00') });
+  await page.goto('/');
+  await page.getByRole('button', { name: /Alimentos/ }).click();
+  await page.getByRole('button', { name: 'Cadastrar alimento' }).click();
+  await page.getByLabel('Nome').fill('Aveia em flocos');
+  await page.getByLabel('Valor energético (kcal)').fill('100');
+  await page.getByRole('button', { name: 'Salvar alimento' }).click();
+
+  await page.getByRole('button', { name: /Consumo/ }).click();
+  await page.getByRole('button', { name: 'Cadastrar consumo' }).click();
+  await page.getByLabel('Data e hora').fill('2026-01-02T12:34');
+  await page.getByLabel('Alimento').fill('Aveia');
+  await page.getByRole('option', { name: 'Aveia em flocos' }).click();
+  await page.getByLabel('Massa (g)').fill('100');
+  await page.getByRole('button', { name: 'Salvar consumo' }).click();
+
+  const seletorDia = page.getByRole('textbox', { name: 'Dia' });
+  await page.locator('.card-consumo').waitFor({ state: 'visible' });
+  await seletorDia.evaluate((element) => element.blur());
+  await expect(page).toHaveScreenshot('consumo-dia-selecionado.png', { fullPage: true });
+
+  await seletorDia.fill('2026-01-01');
+  await page.locator('.content-placeholder').waitFor({ state: 'visible' });
+  await seletorDia.evaluate((element) => element.blur());
+  await expect(page).toHaveScreenshot('consumo-dia-sem-registros.png', { fullPage: true });
+
+  await seletorDia.fill('2026-01-02');
+  await page.locator('.card-consumo').waitFor({ state: 'visible' });
+  await seletorDia.evaluate((element) => element.blur());
+  await expect(page).toHaveScreenshot('consumo-dia-selecionado.png', { fullPage: true });
+});
+
 test('exibe o formulário de cadastro de Consumo', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('button', { name: /Consumo/ }).click();
