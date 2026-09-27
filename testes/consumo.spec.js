@@ -1,5 +1,24 @@
 const { test, expect } = require('@playwright/test');
 
+async function prepararBanco(page, alimentos, consumos = []) {
+  await page.evaluate(async ({ alimentos, consumos }) => {
+    const db = await new Promise((resolve, reject) => {
+      const request = indexedDB.open('na-medida');
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+    const tx = db.transaction(['alimentos', 'consumos'], 'readwrite');
+    for (const alimento of alimentos) tx.objectStore('alimentos').add(alimento);
+    for (const consumo of consumos) tx.objectStore('consumos').add(consumo);
+    await new Promise((resolve, reject) => {
+      tx.oncomplete = resolve;
+      tx.onerror = () => reject(tx.error);
+      tx.onabort = () => reject(tx.error);
+    });
+    db.close();
+  }, { alimentos, consumos });
+}
+
 test('exibe a página de Consumo com os elementos básicos', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('button', { name: /Consumo/ }).click();
@@ -12,23 +31,16 @@ test('exibe a página de Consumo com os elementos básicos', async ({ page }) =>
 test('filtra os consumos e o resumo pelo dia selecionado', async ({ page }) => {
   await page.clock.install({ time: new Date('2026-01-02T12:00:00') });
   await page.goto('/');
-  await page.getByRole('button', { name: /Alimentos/ }).click();
-  await page.getByRole('button', { name: 'Cadastrar alimento' }).click();
-  await page.getByLabel('Nome').fill('Aveia em flocos');
-  await page.getByLabel('Valor energético (kcal)').fill('100');
-  await page.getByLabel('Gorduras (g)').fill('10');
-  await page.getByLabel('Carboidratos (g)').fill('20');
-  await page.getByLabel('Proteínas (g)').fill('5');
-  await page.getByLabel('Fibras (g)').fill('2');
-  await page.getByRole('button', { name: 'Salvar alimento' }).click();
-
-  await page.getByRole('button', { name: /Consumo/ }).click();
-  await page.getByRole('button', { name: 'Cadastrar consumo' }).click();
-  await page.getByLabel('Data e hora').fill('2026-01-02T12:34');
-  await page.getByLabel('Alimento').fill('Aveia');
-  await page.getByRole('option', { name: 'Aveia em flocos' }).click();
-  await page.getByLabel('Massa (g)').fill('100');
-  await page.getByRole('button', { name: 'Salvar consumo' }).click();
+  await prepararBanco(page, [
+    {
+      id: 1,
+      nome: 'Aveia em flocos',
+      tabelaNutricional: { valorEnergetico: 100, gorduras: 10, carboidratos: 20, proteinas: 5, fibras: 2 }
+    }
+  ], [
+    { dataHora: '2026-01-02T12:34', alimentoId: 1, alimentoNome: 'Aveia em flocos', massa: 100 }
+  ]);
+  await page.reload();
 
   const seletorDia = page.locator('#dia-consumo');
   await expect(page.locator('.card-consumo')).toContainText('Aveia em flocos');
@@ -59,16 +71,10 @@ test('exibe o formulário de cadastro de Consumo', async ({ page }) => {
 
 test('exibe sugestões filtradas de alimentos ao digitar no campo de busca', async ({ page }) => {
   await page.goto('/');
-  await page.getByRole('button', { name: /Alimentos/ }).click();
-
-  for (const nome of ['Aveia em flocos', 'Arroz branco']) {
-    await page.getByRole('button', { name: 'Cadastrar alimento' }).click();
-    await page.getByLabel('Nome').fill(nome);
-    await page.getByRole('button', { name: 'Salvar alimento' }).click();
-    await page.getByRole('button', { name: /Alimentos/ }).click();
-  }
-
-  await page.getByRole('button', { name: /Consumo/ }).click();
+  await prepararBanco(page, [
+    { id: 1, nome: 'Aveia em flocos', tabelaNutricional: {} },
+    { id: 2, nome: 'Arroz branco', tabelaNutricional: {} }
+  ]);
   await page.getByRole('button', { name: 'Cadastrar consumo' }).click();
   await page.getByLabel('Alimento').fill('Aveia');
 
@@ -167,25 +173,17 @@ test('exibe um consumo após o cadastro e persiste a imagem no IndexedDB', async
 test('exibe o resumo nutricional e os itens de nutrição na tela de consumo', async ({ page }) => {
   await page.clock.install({ time: new Date('2026-01-02T12:00:00') });
   await page.goto('/');
-  await page.getByRole('button', { name: /Alimentos/ }).click();
-  await page.getByRole('button', { name: 'Cadastrar alimento' }).click();
-  await page.getByLabel('Nome').fill('Alimento do resumo');
-  await page.getByLabel('Valor energético (kcal)').fill('100');
-  await page.getByLabel('Gorduras (g)').fill('10');
-  await page.getByLabel('Carboidratos (g)').fill('20');
-  await page.getByLabel('Proteínas (g)').fill('5');
-  await page.getByLabel('Fibras (g)').fill('2');
-  await page.getByRole('button', { name: 'Salvar alimento' }).click();
-
-  await page.getByRole('button', { name: /Consumo/ }).click();
-  for (const [dataHora, massa] of [['2026-01-02T12:00', '100'], ['2026-01-01T12:00', '700']]) {
-    await page.getByRole('button', { name: 'Cadastrar consumo' }).click();
-    await page.getByLabel('Data e hora').fill(dataHora);
-    await page.getByLabel('Alimento').fill('Alimento do resumo');
-    await page.getByRole('option', { name: 'Alimento do resumo' }).click();
-    await page.getByLabel('Massa (g)').fill(massa);
-    await page.getByRole('button', { name: 'Salvar consumo' }).click();
-  }
+  await prepararBanco(page, [
+    {
+      id: 1,
+      nome: 'Alimento do resumo',
+      tabelaNutricional: { valorEnergetico: 100, gorduras: 10, carboidratos: 20, proteinas: 5, fibras: 2 }
+    }
+  ], [
+    { dataHora: '2026-01-02T12:00', alimentoId: 1, alimentoNome: 'Alimento do resumo', massa: 100 },
+    { dataHora: '2026-01-01T12:00', alimentoId: 1, alimentoNome: 'Alimento do resumo', massa: 700 }
+  ]);
+  await page.reload();
 
   const resumo = page.locator('.resumo-nutricional');
   await expect(resumo).toContainText('Valor energético');
