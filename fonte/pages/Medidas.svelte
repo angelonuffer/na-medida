@@ -2,7 +2,7 @@
   import { onMount } from 'svelte';
   import { listarMedidas } from '../db.js';
 
-  let { onCadastrar } = $props();
+  let { onCadastrar, onSelecionar } = $props();
   let registros = $state([]);
 
   onMount(async () => {
@@ -33,7 +33,12 @@
   {:else}
     <div class="lista-medidas" aria-label="Histórico de medidas">
       {#each registros as registro (registro.id)}
-        <article class="card-medida">
+        <button
+          type="button"
+          class="card-medida"
+          aria-label={`Ver detalhes da medida de ${formatarData(registro.data)}`}
+          onclick={() => onSelecionar?.(registro)}
+        >
           <time datetime={registro.data}>{formatarData(registro.data)}</time>
           <div class="valores-medida">
             <strong>{formatarNumero(registro.peso)} kg</strong>
@@ -44,7 +49,7 @@
               <span>IMC {formatarNumero(registro.imc)}</span>
             {/if}
           </div>
-        </article>
+        </button>
       {/each}
     </div>
   {/if}

@@ -8,10 +8,12 @@
   import Arquivo from './pages/Arquivo.svelte';
   import Medidas from './pages/Medidas.svelte';
   import CadastroMedidas from './pages/CadastroMedidas.svelte';
+  import DetalheMedida from './pages/DetalheMedida.svelte';
   import { arquivarAlimento, restaurarAlimento } from './db.js';
 
   let paginaAtiva = 'consumo';
   let alimentoSelecionado = null;
+  let medidaSelecionada = null;
   let paginaAnteriorDetalhe = 'alimentos';
   let menuAberto = false;
 
@@ -58,6 +60,7 @@
     const aoNavegarHistorico = () => {
       paginaAtiva = paginaDaUrl() ?? 'consumo';
       alimentoSelecionado = null;
+      medidaSelecionada = null;
     };
 
     window.addEventListener('popstate', aoNavegarHistorico);
@@ -70,9 +73,19 @@
     paginaAtiva = 'detalhe-alimento';
   }
 
+  function abrirDetalheMedida(medida) {
+    medidaSelecionada = medida;
+    paginaAtiva = 'detalhe-medida';
+  }
+
   function voltarParaAlimentos() {
     alimentoSelecionado = null;
     paginaAtiva = paginaAnteriorDetalhe;
+  }
+
+  function voltarParaMedidas() {
+    medidaSelecionada = null;
+    paginaAtiva = 'medidas';
   }
 
   async function arquivarSelecionado(id) {
@@ -149,7 +162,10 @@
     {:else if paginaAtiva === 'cadastro-consumo'}
       <CadastroConsumo onSalvar={() => (paginaAtiva = 'consumo')} onVoltar={() => (paginaAtiva = 'consumo')} />
     {:else if paginaAtiva === 'medidas'}
-      <Medidas onCadastrar={() => (paginaAtiva = 'cadastro-medidas')} />
+      <Medidas
+        onCadastrar={() => (paginaAtiva = 'cadastro-medidas')}
+        onSelecionar={abrirDetalheMedida}
+      />
     {:else if paginaAtiva === 'cadastro-medidas'}
       <CadastroMedidas
         onSalvar={() => (paginaAtiva = 'medidas')}
@@ -164,6 +180,8 @@
         onArquivar={arquivarSelecionado}
         onRestaurar={restaurarSelecionado}
       />
+    {:else if paginaAtiva === 'detalhe-medida' && medidaSelecionada}
+      <DetalheMedida medida={medidaSelecionada} onVoltar={voltarParaMedidas} />
     {:else}
       <Consumo onCadastrar={() => (paginaAtiva = 'cadastro-consumo')} />
     {/if}
