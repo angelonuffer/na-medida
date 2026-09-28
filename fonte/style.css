@@ -21,8 +21,10 @@
 }
 
 :root {
+    color-scheme: light;
     --cor-fundo: #f7f8f8;
     --cor-superficie: #fff;
+    --cor-superficie-alt: #fafafa;
     --cor-grafite: #303d4a;
     --cor-grafite-profundo: #1d2b38;
     --cor-vermelho: #cf2639;
@@ -30,12 +32,164 @@
     --cor-vermelho-claro: #fff0f1;
     --cor-ambar: #ffb238;
     --cor-borda: #dce1e4;
+    --cor-texto-suave: #666;
+    --cor-fundo-input: #fff;
+    --cor-sombra: rgba(0, 0, 0, 0.06);
+}
+
+:root[data-theme='dark'] {
+    color-scheme: dark;
+    --cor-fundo: #0d1724;
+    --cor-superficie: #1a2d3f;
+    --cor-superficie-alt: #223b4f;
+    --cor-grafite: #edf5ff;
+    --cor-grafite-profundo: #f6f9ff;
+    --cor-vermelho: #f06a7f;
+    --cor-vermelho-escuro: #df5368;
+    --cor-vermelho-claro: rgba(240, 106, 127, 0.12);
+    --cor-ambar: #f4c777;
+    --cor-borda: rgba(148, 163, 184, 0.24);
+    --cor-texto-suave: #bfd1e7;
+    --cor-fundo-input: #101f2d;
+    --cor-sombra: rgba(2, 6, 23, 0.56);
 }
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f4f6f8;
-    color: #333;
+    background-color: var(--cor-fundo);
+    color: var(--cor-grafite-profundo);
+}
+
+:root[data-theme='dark'] body,
+:root[data-theme='dark'] .main-content,
+:root[data-theme='dark'] .app-container {
+    background-color: var(--cor-fundo);
+    color: var(--cor-grafite-profundo);
+}
+
+:root[data-theme='dark'] .sidebar {
+    background: linear-gradient(180deg, #0f1d2d 0%, #0d1724 100%);
+    box-shadow: 2px 0 14px rgba(0, 0, 0, 0.3);
+}
+
+:root[data-theme='dark'] .sidebar-header,
+:root[data-theme='dark'] .mobile-topbar {
+    background: linear-gradient(180deg, #12273a 0%, #0d1d2d 100%);
+}
+
+:root[data-theme='dark'] .nav-btn {
+    color: #d6e4f5;
+}
+
+:root[data-theme='dark'] .nav-btn:hover,
+:root[data-theme='dark'] .nav-btn.active {
+    background-color: rgba(255, 255, 255, 0.06);
+    color: #ffffff;
+}
+
+:root[data-theme='dark'] .nav-btn.active {
+    border-left-color: var(--cor-vermelho);
+}
+
+:root[data-theme='dark'] .page-section {
+    background: linear-gradient(180deg, rgba(26, 45, 63, 0.98) 0%, rgba(19, 35, 49, 0.98) 100%);
+    box-shadow: 0 14px 30px rgba(2, 6, 23, 0.38);
+    border: 1px solid rgba(148, 163, 184, 0.16);
+}
+
+:root[data-theme='dark'] .resumo-nutricional-item h2,
+:root[data-theme='dark'] .detalhe-nutricao h2,
+:root[data-theme='dark'] .detalhe-nutricao dd,
+:root[data-theme='dark'] .card-consumo h2,
+:root[data-theme='dark'] .card-info h3,
+:root[data-theme='dark'] .card-medida strong,
+:root[data-theme='dark'] .card-consumo strong,
+:root[data-theme='dark'] .grupo-consumo h2,
+:root[data-theme='dark'] .tabela-nutricional legend,
+:root[data-theme='dark'] .form-row label,
+:root[data-theme='dark'] .seletor-dia label,
+:root[data-theme='dark'] .seletor-periodo > span {
+    color: var(--cor-grafite);
+}
+
+:root[data-theme='dark'] .form-row input,
+:root[data-theme='dark'] .form-row textarea,
+:root[data-theme='dark'] .form-row select,
+:root[data-theme='dark'] .seletor-dia input,
+:root[data-theme='dark'] .seletor-periodo button,
+:root[data-theme='dark'] .navegacao-dia button,
+:root[data-theme='dark'] .tabela-nutricional,
+:root[data-theme='dark'] .sugestoes-alimentos {
+    background-color: var(--cor-fundo-input);
+    color: var(--cor-grafite-profundo);
+    border-color: var(--cor-borda);
+}
+
+:root[data-theme='dark'] .seletor-periodo button:hover,
+:root[data-theme='dark'] .seletor-periodo button.selecionado,
+:root[data-theme='dark'] .resumo-nutricional-item:hover,
+:root[data-theme='dark'] .resumo-nutricional-item.selecionado,
+:root[data-theme='dark'] .sugestoes-alimentos li:hover,
+:root[data-theme='dark'] .sugestoes-alimentos li[aria-selected='true'] {
+    background-color: var(--cor-vermelho-claro);
+}
+
+:root[data-theme='dark'] .btn-camera,
+:root[data-theme='dark'] .btn-estimar-nutricao {
+    background: rgba(148, 163, 184, 0.08);
+    border-color: rgba(148, 163, 184, 0.42);
+    color: #edf4fb;
+}
+
+:root[data-theme='dark'] .btn-camera:hover,
+:root[data-theme='dark'] .btn-estimar-nutricao:hover:not(:disabled) {
+    background: rgba(148, 163, 184, 0.12);
+}
+
+:root[data-theme='dark'] .btn-ia {
+    background: linear-gradient(135deg, rgba(246, 201, 123, 0.14), rgba(233, 106, 123, 0.09));
+    border-color: rgba(246, 201, 123, 0.55);
+    color: #ffeec8;
+    box-shadow: 0 0 0 1px rgba(246, 201, 123, 0.08);
+}
+
+:root[data-theme='dark'] .btn-ia:hover:not(:disabled) {
+    box-shadow: 0 6px 18px rgba(246, 201, 123, 0.12);
+}
+
+:root[data-theme='dark'] .lista-recomendacoes .recomendacao-item,
+:root[data-theme='dark'] .card-medida,
+:root[data-theme='dark'] .card-consumo,
+:root[data-theme='dark'] .card-alimento {
+    background: linear-gradient(180deg, rgba(34, 59, 79, 0.96), rgba(27, 45, 60, 0.96));
+    border-color: rgba(148, 163, 184, 0.18);
+}
+
+:root[data-theme='dark'] .card-medida time,
+:root[data-theme='dark'] .card-consumo p,
+:root[data-theme='dark'] .card-nutrientes,
+:root[data-theme='dark'] .detalhe-nutricao dt,
+:root[data-theme='dark'] .versao-medida time {
+    color: var(--cor-texto-suave);
+}
+
+:root[data-theme='dark'] .resumo-nutricional-valores .material-symbols-outlined,
+:root[data-theme='dark'] .faixa-imc-legenda-item,
+:root[data-theme='dark'] .faixa-imc-status {
+    color: var(--cor-texto-suave);
+}
+
+:root[data-theme='dark'] .faixa-imc-legenda-item.ativa {
+    color: #edf4ff;
+}
+
+:root[data-theme='dark'] .btn-voltar,
+:root[data-theme='dark'] .btn-voltar:hover {
+    color: #ffdfe5;
+}
+
+:root[data-theme='dark'] .sidebar-overlay {
+    background-color: rgba(2, 6, 23, 0.62);
 }
 
 .app-container {
@@ -130,16 +284,16 @@ body {
     flex-grow: 1;
     min-width: 0;
     padding: 40px;
-    background-color: #f4f6f8;
+    background-color: var(--cor-fundo);
     overflow-y: auto;
 }
 
 .page-section {
     display: none;
-    background-color: #fff;
+    background-color: var(--cor-superficie);
     padding: 30px;
     border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    box-shadow: 0 2px 10px var(--cor-sombra);
 }
 
 .page-section.active {
@@ -149,12 +303,12 @@ body {
 
 h1 {
     margin-bottom: 10px;
-    color: #2c3e50;
+    color: var(--cor-grafite);
     font-size: 28px;
 }
 
 p {
-    color: #666;
+    color: var(--cor-texto-suave);
     margin-bottom: 20px;
     line-height: 1.6;
 }
@@ -536,8 +690,8 @@ p {
     grid-template-columns: minmax(120px, 1.3fr) minmax(0, 2fr);
     gap: 12px;
     padding: 12px 14px;
-    background: #f5f7fa;
-    border: 1px solid #e2e8ee;
+    background: var(--cor-superficie-alt);
+    border: 1px solid var(--cor-borda);
     border-radius: 10px;
 }
 
@@ -593,8 +747,10 @@ p {
 .form-row select {
     width: 100%;
     padding: 10px 12px;
-    border: 1px solid #dce1e6;
+    border: 1px solid var(--cor-borda);
     border-radius: 6px;
+    background-color: var(--cor-fundo-input);
+    color: var(--cor-grafite-profundo);
     font-size: 14px;
     font-family: inherit;
 }
@@ -652,10 +808,10 @@ p {
     margin: -6px 0 0;
     padding: 4px 0;
     list-style: none;
-    border: 1px solid #dce1e6;
+    border: 1px solid var(--cor-borda);
     border-radius: 6px;
-    background: #fff;
-    box-shadow: 0 4px 10px rgb(16 24 40 / 12%);
+    background: var(--cor-superficie);
+    box-shadow: 0 4px 10px var(--cor-sombra);
 }
 
 .sugestoes-alimentos li {
@@ -816,10 +972,10 @@ p {
     align-items: center;
     justify-content: space-between;
     gap: 16px;
-    border: 1px solid #eee;
+    border: 1px solid var(--cor-borda);
     border-radius: 8px;
     padding: 14px;
-    background-color: #fafafa;
+    background-color: var(--cor-superficie-alt);
 }
 
 .card-medida time {
@@ -844,10 +1000,10 @@ p {
     align-items: center;
     justify-content: space-between;
     gap: 16px;
-    border: 1px solid #eee;
+    border: 1px solid var(--cor-borda);
     border-radius: 8px;
     padding: 14px;
-    background-color: #fafafa;
+    background-color: var(--cor-superficie-alt);
 }
 
 .card-consumo h2 {
@@ -874,10 +1030,10 @@ p {
     display: flex;
     align-items: center;
     gap: 16px;
-    border: 1px solid #eee;
+    border: 1px solid var(--cor-borda);
     border-radius: 8px;
     padding: 14px;
-    background-color: #fafafa;
+    background-color: var(--cor-superficie-alt);
     cursor: pointer;
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
