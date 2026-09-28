@@ -20,6 +20,18 @@
     box-sizing: border-box;
 }
 
+:root {
+    --cor-fundo: #f7f8f8;
+    --cor-superficie: #fff;
+    --cor-grafite: #303d4a;
+    --cor-grafite-profundo: #1d2b38;
+    --cor-vermelho: #cf2639;
+    --cor-vermelho-escuro: #ad1f30;
+    --cor-vermelho-claro: #fff0f1;
+    --cor-ambar: #ffb238;
+    --cor-borda: #dce1e4;
+}
+
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background-color: #f4f6f8;
@@ -1141,4 +1153,130 @@ p {
         opacity: 1; 
         transform: translateY(0); 
     }
+}
+
+/* Paleta alinhada ao ícone da balança e da maçã. */
+body,
+.main-content {
+    background-color: var(--cor-fundo);
+    color: var(--cor-grafite-profundo);
+}
+
+.sidebar {
+    background-color: var(--cor-grafite);
+}
+
+.sidebar-header,
+.mobile-topbar {
+    background-color: var(--cor-grafite-profundo);
+}
+
+.nav-btn:hover,
+.nav-btn.active {
+    background-color: #263542;
+}
+
+.nav-btn.active {
+    border-left-color: var(--cor-vermelho);
+}
+
+.page-section {
+    background-color: var(--cor-superficie);
+}
+
+h1,
+.seletor-dia label,
+.seletor-periodo > span,
+.resumo-nutricional-item h2,
+.grupo-consumo h2,
+.form-row label,
+.tabela-nutricional legend,
+.card-medida strong,
+.card-consumo h2,
+.card-consumo strong,
+.card-info h3,
+.detalhe-nutricao h2,
+.detalhe-nutricao dd {
+    color: var(--cor-grafite);
+}
+
+.btn-cadastrar,
+.btn-salvar {
+    background-color: var(--cor-vermelho);
+}
+
+.btn-cadastrar:hover,
+.btn-salvar:hover {
+    background-color: var(--cor-vermelho-escuro);
+}
+
+.btn-voltar,
+.btn-voltar:hover {
+    color: var(--cor-vermelho-escuro);
+}
+
+.btn-camera,
+.btn-estimar-nutricao {
+    border-color: var(--cor-vermelho);
+    color: var(--cor-vermelho-escuro);
+}
+
+.btn-camera:hover,
+.btn-estimar-nutricao:hover:not(:disabled) {
+    background-color: var(--cor-vermelho-claro);
+}
+
+.btn-ia {
+    border-color: var(--cor-ambar);
+    background: linear-gradient(135deg, #fff8e9, #ffedc9);
+    color: #80500b;
+    box-shadow: 0 0 0 1px rgb(255 178 56 / 12%);
+}
+
+.btn-ia:hover:not(:disabled) {
+    box-shadow: 0 6px 18px rgb(255 178 56 / 24%);
+}
+
+.seletor-periodo button:hover,
+.seletor-periodo button.selecionado,
+.resumo-nutricional-item:hover,
+.resumo-nutricional-item.selecionado,
+.sugestoes-alimentos li:hover,
+.sugestoes-alimentos li[aria-selected="true"] {
+    background-color: var(--cor-vermelho-claro);
+}
+
+.seletor-periodo button:focus-visible,
+.resumo-nutricional-item:focus-visible {
+    outline-color: var(--cor-vermelho);
+}
+
+.barra-recomendacao-preenchida {
+    background-color: var(--cor-vermelho);
+}
+
+.seletor-periodo button,
+.navegacao-dia button,
+.seletor-dia input,
+.form-row input,
+.form-row textarea,
+.form-row select,
+.tabela-nutricional {
+    border-color: var(--cor-borda);
+}
+
+.card-alimento:hover,
+.card-alimento:focus-visible {
+    border-color: var(--cor-vermelho);
+    box-shadow: 0 2px 8px rgb(207 38 57 / 15%);
+}
+
+.btn-arquivar,
+.btn-restaurar {
+    background-color: #59636b;
+}
+
+.btn-arquivar:hover,
+.btn-restaurar:hover {
+    background-color: var(--cor-grafite-profundo);
 }
