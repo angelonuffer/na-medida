@@ -3,6 +3,7 @@
   import { pipeline } from '@huggingface/transformers';
   import { adicionarAlimento, adicionarConsumo, listarAlimentos } from '../db.js';
   import { alimentosTaco } from '../taco.js';
+  import { extrairValoresTabelaNutricional, prepararImagemParaOCR } from '../ocrTabela.mjs';
 
   let { onSalvar, onVoltar } = $props();
   let alimentos = $state([]);
@@ -10,6 +11,7 @@
   let imagem = $state(null);
   let imagemPreview = $state('');
   let cameraInput;
+  let cameraTabelaInput = $state(null);
   let alimentoId = $state('');
   let alimentoBusca = $state('');
   let sugestoesAbertas = $state(false);
@@ -19,6 +21,8 @@
   let aiClassifier = null;
   let estimandoNutricionais = $state(false);
   let etapaEstimativa = $state('');
+  let lendoTabela = $state(false);
+  let etapaLeitura = $state('');
   let aiNutrientEstimator = null;
   let tabelaNutricional = $state({
     valorEnergetico: '',
@@ -156,6 +160,69 @@
     } finally {
       estimandoNutricionais = false;
       etapaEstimativa = '';
+    }
+  }
+
+  async function lerTabelaNutricional(event) {
+    const arquivo = event.currentTarget.files?.[0];
+    event.currentTarget.value = '';
+    if (!arquivo || lendoTabela) return;
+
+    let leitor;
+    lendoTabela = true;
+    etapaLeitura = 'Preparando imagem e carregando OCR...';
+
+    try {
+      const { createWorker } = await import('tesseract.js');
+      leitor = await createWorker('por+eng', 1, {
+        langPath: 'https://tessdata.projectnaptha.com/4.0.0_best'
+      });
+      await leitor.setParameters({
+        preserve_interword_spaces: '1',
+        user_defined_dpi: '300',
+        tessedit_pageseg_mode: '6'
+      });
+
+      const imagemContraste = await prepararImagemParaOCR(arquivo);
+      const imagemBinarizada = await prepararImagemParaOCR(arquivo, true);
+      const leituras = [];
+      const configuracoes = [
+        { imagem: imagemContraste, modo: '6', descricao: 'bloco de tabela' },
+        { imagem: imagemContraste, modo: '4', descricao: 'colunas da tabela' },
+        { imagem: imagemContraste, modo: '11', descricao: 'texto esparso' },
+        { imagem: imagemBinarizada, modo: '6', descricao: 'alto contraste' }
+      ];
+
+      for (const configuracao of configuracoes) {
+        etapaLeitura = `Lendo tabela: ${configuracao.descricao} (${leituras.length + 1}/${configuracoes.length})...`;
+        await leitor.setParameters({ tessedit_pageseg_mode: configuracao.modo });
+        const resultado = await leitor.recognize(configuracao.imagem);
+        const valores = extrairValoresTabelaNutricional(resultado.data.text);
+        leituras.push({ valores, confianca: resultado.data.confidence ?? 0 });
+      }
+
+      const melhorLeitura = leituras.reduce((melhor, leitura) => {
+        const pontuacao = Object.keys(leitura.valores).length * 1000 + leitura.confianca;
+        const melhorPontuacao = Object.keys(melhor.valores).length * 1000 + melhor.confianca;
+        return pontuacao > melhorPontuacao ? leitura : melhor;
+      });
+      const valores = melhorLeitura.valores;
+      const encontrados = Object.keys(valores).length;
+
+      if (!encontrados) {
+        etapaLeitura = 'Não consegui confirmar a coluna 100 g nem identificar nutrientes com segurança. Enquadre o cabeçalho e tente outra foto.';
+        return;
+      }
+
+      tabelaNutricional = { ...tabelaNutricional, ...valores };
+      etapaLeitura = `${encontrados} ${encontrados === 1 ? 'valor identificado' : 'valores identificados'} após ${leituras.length} leituras. Confira antes de salvar.`;
+    } catch (error) {
+      etapaLeitura = error instanceof Error
+        ? `Não foi possível ler a foto: ${error.message}`
+        : 'Não foi possível ler a foto da tabela nutricional.';
+    } finally {
+      await leitor?.terminate();
+      lendoTabela = false;
     }
   }
 
@@ -426,6 +493,28 @@
             <span class="material-symbols-outlined">{estimandoNutricionais ? 'sync' : 'auto_awesome'}</span>
             Estimar com IA
           </button>
+          <input
+            bind:this={cameraTabelaInput}
+            class="input-camera"
+            type="file"
+            accept="image/*"
+            capture="environment"
+            onchange={lerTabelaNutricional}
+            aria-hidden="true"
+            tabindex="-1"
+          />
+          <button
+            type="button"
+            class="btn-camera"
+            disabled={lendoTabela}
+            onclick={() => cameraTabelaInput?.click()}
+          >
+            <span class="material-symbols-outlined">{lendoTabela ? 'sync' : 'document_scanner'}</span>
+            {lendoTabela ? 'Lendo tabela...' : 'Fotografar tabela'}
+          </button>
+          {#if etapaLeitura}
+            <small aria-live="polite">{etapaLeitura}</small>
+          {/if}
           {#if etapaEstimativa}
             <small aria-live="polite">{etapaEstimativa}</small>
           {/if}

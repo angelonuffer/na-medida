@@ -1,5 +1,73 @@
 const { test, expect } = require('@playwright/test');
 
+test('extrai nutrientes e valores do texto reconhecido na tabela', async () => {
+  const { extrairValoresTabelaNutricional } = await import('../fonte/ocrTabela.mjs');
+  const valores = extrairValoresTabelaNutricional([
+    '100 g 20 g % VD*',
+    'Valor energético 1.234 246 3',
+    'Gorduras totais 8,5 1,7 4',
+    'Carboidratos 24 4,8 8',
+    'Proteínas',
+    '3,2 0,6 6',
+    'Fibra alimentar 4 0,8 16'
+  ].join('\n'));
+
+  expect(valores).toEqual({
+    valorEnergetico: '1234',
+    gorduras: '8.5',
+    carboidratos: '24',
+    proteinas: '3.2',
+    fibras: '4'
+  });
+});
+
+test('seleciona a coluna 100 g mesmo quando ela não é a primeira', async () => {
+  const { extrairValoresTabelaNutricional } = await import('../fonte/ocrTabela.mjs');
+  const valores = extrairValoresTabelaNutricional([
+    '20 g % VD* 100 g',
+    'Valor energético 68 3 339',
+    'Carboidratos totais (g) 16 6 82',
+    'Proteínas (g) 0,2 0 0,8'
+  ].join('\n'));
+
+  expect(valores).toEqual({
+    valorEnergetico: '339',
+    carboidratos: '82',
+    proteinas: '0.8'
+  });
+});
+
+test('não presume a coluna 100 g quando o cabeçalho não foi reconhecido', async () => {
+  const { extrairValoresTabelaNutricional } = await import('../fonte/ocrTabela.mjs');
+  const valores = extrairValoresTabelaNutricional([
+    'Valor energético 339 68 3',
+    'Carboidratos totais (g) 82 16 6',
+    'Proteínas (g) 0,8 0,2 0'
+  ].join('\n'));
+
+  expect(valores).toEqual({});
+});
+
+test('extrai valores de 100 g da leitura da tabela nutricional enviada', async () => {
+  const { extrairValoresTabelaNutricional } = await import('../fonte/ocrTabela.mjs');
+  const valores = extrairValoresTabelaNutricional([
+    'INFORMAÇÃO NUTRICIONAL',
+    'Porções por embalagem: 10 porções',
+    'Porção: 20 g (1 colher de sopa)',
+    '100 g | 20 g | % VD*',
+    'Valor Energético (Kcal) | 339 | 68 | 3',
+    'Carboidratos totais (g) 82 16 6',
+    'Açúcares totais (g) 75 15',
+    'Proteínas (g) 0,8 | 0,2 | 0'
+  ].join('\n'));
+
+  expect(valores).toEqual({
+    valorEnergetico: '339',
+    carboidratos: '82',
+    proteinas: '0.8'
+  });
+});
+
 async function prepararBanco(page, alimentos, consumos = [], medidas = []) {
   await page.evaluate(async ({ alimentos, consumos, medidas }) => {
     const db = await new Promise((resolve, reject) => {
@@ -380,6 +448,8 @@ test('cadastra um alimento novo com tabela nutricional ao salvar o consumo', asy
 
   await expect(page.locator('#cadastro-consumo')).toContainText('Tabela nutricional (por 100g)');
   await expect(page.getByRole('button', { name: 'Estimar tabela nutricional com IA' })).toBeEnabled();
+  await expect(page.getByRole('button', { name: 'Fotografar tabela' })).toBeVisible();
+  await expect(page.locator('.tabela-nutricional input[type="file"]')).toHaveAttribute('capture', 'environment');
   await page.getByLabel('Valor energético (kcal)').fill('389');
   await page.getByLabel('Gorduras (g)').fill('7');
   await page.getByLabel('Carboidratos (g)').fill('66');

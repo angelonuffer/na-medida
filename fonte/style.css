@@ -698,6 +698,11 @@ p {
     background: #f0f8fd;
 }
 
+.btn-camera:disabled {
+    opacity: 0.6;
+    cursor: wait;
+}
+
 .tabela-nutricional {
     border: 1px solid #dce1e6;
     border-radius: 8px;
