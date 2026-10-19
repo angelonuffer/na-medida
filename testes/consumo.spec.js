@@ -150,6 +150,25 @@ test('filtra os consumos e o resumo pelo dia selecionado', async ({ page }) => {
   await expect(page.locator('.card-consumo')).toContainText('Aveia em flocos');
 });
 
+test('abre o detalhe do consumo selecionado e permite voltar à listagem', async ({ page }) => {
+  await page.clock.install({ time: new Date('2026-01-02T12:00:00') });
+  await page.goto('/');
+  await prepararBanco(page, [], [
+    { id: 1, dataHora: '2026-01-02T09:45', alimentoNome: 'Aveia em flocos', massa: 37.5 }
+  ]);
+  await page.reload();
+
+  await page.locator('.card-consumo').click();
+
+  await expect(page.locator('#detalhe-consumo h1')).toHaveText('Aveia em flocos');
+  await expect(page.locator('#detalhe-consumo')).toContainText('02/01/2026, 09:45');
+  await expect(page.locator('#detalhe-consumo')).toContainText('37,5 g');
+
+  await page.getByRole('button', { name: 'Voltar para Consumo' }).click();
+  await expect(page.locator('#consumo h1')).toHaveText('Consumo');
+  await expect(page.locator('.card-consumo')).toContainText('Aveia em flocos');
+});
+
 test('usa a medida do dia ou a mais recente anterior e limita a barra a 110% do máximo', async ({ page }) => {
   await page.clock.install({ time: new Date('2026-01-02T12:00:00') });
   await page.goto('/');
@@ -426,6 +445,11 @@ test('agrupa e ordena consumos pelo nutriente selecionado', async ({ page }) => 
   await expect(grupos.nth(0).locator('li')).toHaveCount(2);
   await expect(grupos.nth(1)).toContainText('Castanhas');
   await expect(grupos.nth(1)).toContainText('300 kcal');
+
+  await grupos.nth(0).getByRole('button').first().click();
+  await expect(page.locator('#detalhe-consumo h1')).toHaveText('Aveia');
+  await page.getByRole('button', { name: 'Voltar para Consumo' }).click();
+  await expect(page.locator('.grupo-consumo')).toHaveCount(2);
 
   await page.getByRole('button', { name: 'Agrupar por Valor energético (kcal)' }).click();
   await expect(page.locator('.grupo-consumo')).toHaveCount(0);

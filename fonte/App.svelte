@@ -4,6 +4,7 @@
   import CadastroAlimento from './pages/CadastroAlimento.svelte';
   import CadastroConsumo from './pages/CadastroConsumo.svelte';
   import Consumo from './pages/Consumo.svelte';
+  import DetalheConsumo from './pages/DetalheConsumo.svelte';
   import DetalheAlimento from './pages/DetalheAlimento.svelte';
   import Arquivo from './pages/Arquivo.svelte';
   import Medidas from './pages/Medidas.svelte';
@@ -13,6 +14,7 @@
 
   let paginaAtiva = 'consumo';
   let alimentoSelecionado = null;
+  let consumoSelecionado = null;
   let medidaSelecionada = null;
   let paginaAnteriorDetalhe = 'alimentos';
   let menuAberto = false;
@@ -60,6 +62,7 @@
     const aoNavegarHistorico = () => {
       paginaAtiva = paginaDaUrl() ?? 'consumo';
       alimentoSelecionado = null;
+      consumoSelecionado = null;
       medidaSelecionada = null;
     };
 
@@ -76,6 +79,16 @@
   function abrirDetalheMedida(medida) {
     medidaSelecionada = medida;
     paginaAtiva = 'detalhe-medida';
+  }
+
+  function abrirDetalheConsumo(consumo) {
+    consumoSelecionado = consumo;
+    paginaAtiva = 'detalhe-consumo';
+  }
+
+  function voltarParaConsumo() {
+    consumoSelecionado = null;
+    paginaAtiva = 'consumo';
   }
 
   function voltarParaAlimentos() {
@@ -198,8 +211,21 @@
         onVoltar={voltarParaMedidas}
         onEditar={() => (paginaAtiva = 'editar-medida')}
       />
+    {:else if paginaAtiva === 'consumo' || paginaAtiva === 'detalhe-consumo'}
+      <div hidden={paginaAtiva !== 'consumo'}>
+        <Consumo
+          onCadastrar={() => (paginaAtiva = 'cadastro-consumo')}
+          onSelecionar={abrirDetalheConsumo}
+        />
+      </div>
+      {#if paginaAtiva === 'detalhe-consumo' && consumoSelecionado}
+        <DetalheConsumo consumo={consumoSelecionado} onVoltar={voltarParaConsumo} />
+      {/if}
     {:else}
-      <Consumo onCadastrar={() => (paginaAtiva = 'cadastro-consumo')} />
+      <Consumo
+        onCadastrar={() => (paginaAtiva = 'cadastro-consumo')}
+        onSelecionar={abrirDetalheConsumo}
+      />
     {/if}
   </main>
 </div>

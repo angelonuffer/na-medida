@@ -4,7 +4,7 @@
   import { calcularRecomendacoes, calcularRecomendacoesMedias } from '../recomendacoes.js';
   import { alimentosTaco } from '../taco.js';
 
-  let { onCadastrar } = $props();
+  let { onCadastrar, onSelecionar } = $props();
   let consumos = $state([]);
   let alimentos = $state([]);
   let medidas = $state([]);
@@ -274,8 +274,10 @@
           <ul>
             {#each grupo.registros as consumo (consumo.id)}
               <li>
-                <time datetime={consumo.dataHora}>{consumo.dataHora.split('T')[1]}</time>
-                <span>{formatarValor(Number(consumo.massa) || 0)} g</span>
+                <button class="registro-consumo" type="button" onclick={() => onSelecionar(consumo)}>
+                  <time datetime={consumo.dataHora}>{consumo.dataHora.split('T')[1]}</time>
+                  <span>{formatarValor(Number(consumo.massa) || 0)} g</span>
+                </button>
               </li>
             {/each}
           </ul>
@@ -285,12 +287,12 @@
   {:else}
     <div class="lista-consumos">
       {#each consumosExibidos as consumo (consumo.id)}
-        <article class="card-consumo">
+        <button class="card-consumo" type="button" onclick={() => onSelecionar(consumo)}>
           <div>
             <h2>{consumo.alimentoNome}</h2>
           </div>
           <strong>{consumo.dataHora.split("T")[1]}</strong>
-        </article>
+        </button>
       {/each}
     </div>
   {/if}
