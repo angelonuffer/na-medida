@@ -951,6 +951,27 @@ p {
     margin-bottom: 24px;
 }
 
+.form-edicao-consumo {
+    max-width: 600px;
+    margin-bottom: 24px;
+}
+
+.acoes-edicao-consumo {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.acoes-edicao-consumo .btn-salvar {
+    align-self: auto;
+}
+
+.acoes-edicao-consumo .btn-salvar:disabled {
+    opacity: 0.6;
+    cursor: wait;
+}
+
 .btn-voltar {
     align-self: flex-start;
     background: transparent;

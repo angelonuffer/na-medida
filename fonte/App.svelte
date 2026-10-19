@@ -10,11 +10,12 @@
   import Medidas from './pages/Medidas.svelte';
   import CadastroMedidas from './pages/CadastroMedidas.svelte';
   import DetalheMedida from './pages/DetalheMedida.svelte';
-  import { arquivarAlimento, listarMedidas, restaurarAlimento } from './db.js';
+  import { arquivarAlimento, atualizarConsumo, listarMedidas, restaurarAlimento } from './db.js';
 
   let paginaAtiva = 'consumo';
   let alimentoSelecionado = null;
   let consumoSelecionado = null;
+  let revisaoConsumos = 0;
   let medidaSelecionada = null;
   let paginaAnteriorDetalhe = 'alimentos';
   let menuAberto = false;
@@ -89,6 +90,11 @@
   function voltarParaConsumo() {
     consumoSelecionado = null;
     paginaAtiva = 'consumo';
+  }
+
+  async function salvarEdicaoConsumo(registro) {
+    consumoSelecionado = await atualizarConsumo(consumoSelecionado.id, registro);
+    revisaoConsumos += 1;
   }
 
   function voltarParaAlimentos() {
@@ -216,15 +222,21 @@
         <Consumo
           onCadastrar={() => (paginaAtiva = 'cadastro-consumo')}
           onSelecionar={abrirDetalheConsumo}
+          revisaoConsumos={revisaoConsumos}
         />
       </div>
       {#if paginaAtiva === 'detalhe-consumo' && consumoSelecionado}
-        <DetalheConsumo consumo={consumoSelecionado} onVoltar={voltarParaConsumo} />
+        <DetalheConsumo
+          consumo={consumoSelecionado}
+          onVoltar={voltarParaConsumo}
+          onSalvar={salvarEdicaoConsumo}
+        />
       {/if}
     {:else}
       <Consumo
         onCadastrar={() => (paginaAtiva = 'cadastro-consumo')}
         onSelecionar={abrirDetalheConsumo}
+        revisaoConsumos={revisaoConsumos}
       />
     {/if}
   </main>

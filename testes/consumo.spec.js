@@ -169,6 +169,30 @@ test('abre o detalhe do consumo selecionado e permite voltar à listagem', async
   await expect(page.locator('.card-consumo')).toContainText('Aveia em flocos');
 });
 
+test('edita um consumo e mantém o valor anterior no histórico', async ({ page }) => {
+  await page.clock.install({ time: new Date('2026-01-02T12:00:00') });
+  await page.goto('/');
+  await prepararBanco(page, [], [
+    { id: 1, dataHora: '2026-01-02T09:45', alimentoNome: 'Aveia em flocos', massa: 37.5 }
+  ]);
+  await page.reload();
+  await page.locator('.card-consumo').click();
+
+  await page.getByRole('button', { name: 'Editar consumo' }).click();
+  await page.locator('#data-hora-edicao-consumo').fill('2026-01-02T10:15');
+  await page.locator('#massa-edicao-consumo').fill('42');
+  await page.getByRole('button', { name: 'Salvar alterações' }).click();
+
+  await expect(page.locator('#detalhe-consumo')).toContainText('02/01/2026, 10:15');
+  await expect(page.locator('#detalhe-consumo')).toContainText('42 g');
+  await expect(page.locator('#detalhe-consumo')).toContainText('Histórico de alterações');
+  await expect(page.locator('#detalhe-consumo')).toContainText('02/01/2026, 09:45: 37,5 g');
+  await expect(page.locator('#detalhe-consumo time')).toHaveAttribute('datetime', /^2026-01-02T12:00:/);
+
+  await page.getByRole('button', { name: 'Voltar para Consumo' }).click();
+  await expect(page.locator('.card-consumo')).toContainText('10:15');
+});
+
 test('usa a medida do dia ou a mais recente anterior e limita a barra a 110% do máximo', async ({ page }) => {
   await page.clock.install({ time: new Date('2026-01-02T12:00:00') });
   await page.goto('/');

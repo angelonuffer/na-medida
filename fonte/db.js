@@ -85,6 +85,41 @@ export async function listarConsumos() {
   });
 }
 
+export async function atualizarConsumo(id, registro) {
+  const db = await abrirBanco();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_CONSUMOS, 'readwrite');
+    const store = tx.objectStore(STORE_CONSUMOS);
+    const getRequest = store.get(id);
+
+    getRequest.onsuccess = () => {
+      const consumoAtual = getRequest.result;
+      if (!consumoAtual) {
+        reject(new Error('Consumo não encontrado.'));
+        return;
+      }
+
+      const versaoAnterior = {
+        dataHora: consumoAtual.dataHora,
+        alimentoId: consumoAtual.alimentoId,
+        alimentoNome: consumoAtual.alimentoNome,
+        massa: consumoAtual.massa,
+        editadoEm: new Date().toISOString()
+      };
+      const consumoAtualizado = {
+        ...consumoAtual,
+        ...registro,
+        id,
+        historico: [...(consumoAtual.historico ?? []), versaoAnterior]
+      };
+      const request = store.put(consumoAtualizado);
+      request.onsuccess = () => resolve(consumoAtualizado);
+      request.onerror = () => reject(request.error);
+    };
+    getRequest.onerror = () => reject(getRequest.error);
+  });
+}
+
 export async function adicionarMedida(registro) {
   const db = await abrirBanco();
   return new Promise((resolve, reject) => {

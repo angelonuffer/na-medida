@@ -1,10 +1,9 @@
 <script>
-  import { onMount } from 'svelte';
   import { listarAlimentos, listarConsumos, listarMedidas } from '../db.js';
   import { calcularRecomendacoes, calcularRecomendacoesMedias } from '../recomendacoes.js';
   import { alimentosTaco } from '../taco.js';
 
-  let { onCadastrar, onSelecionar } = $props();
+  let { onCadastrar, onSelecionar, revisaoConsumos = 0 } = $props();
   let consumos = $state([]);
   let alimentos = $state([]);
   let medidas = $state([]);
@@ -76,7 +75,12 @@
       .sort((a, b) => b.total - a.total || a.nome.localeCompare(b.nome, 'pt-BR'));
   });
 
-  onMount(async () => {
+  $effect(() => {
+    revisaoConsumos;
+    carregarDados();
+  });
+
+  async function carregarDados() {
     const [consumosCarregados, alimentosAtivos, alimentosArquivados, medidasCarregadas] = await Promise.all([
       listarConsumos(),
       listarAlimentos(),
@@ -86,7 +90,7 @@
     consumos = consumosCarregados;
     alimentos = [...alimentosAtivos, ...alimentosArquivados, ...alimentosTaco];
     medidas = medidasCarregadas;
-  });
+  }
 
   function formatarDataLocal(data) {
     const ano = data.getFullYear();
